@@ -2,8 +2,8 @@ Howdy, This will be the project README for our Term Porject in Software Engineer
 
 Team Members:
 
-Kristian Pitshugin
-Joshua Grafmiller
-Ryan Meyer
+Kristian Pitshugin,
+Joshua Grafmiller,
+Ryan Meyer,
 Will Varner
 
