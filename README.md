@@ -1,4 +1,4 @@
-Howdy, This will be the project README for our Term Porject in Software Engineering 4050 with Eman Saleh
+Howdy, This will be the project README for our Term Project in Software Engineering 4050 with Eman Saleh
 
 Team Members:
 
