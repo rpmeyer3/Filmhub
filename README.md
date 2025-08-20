@@ -20,3 +20,6 @@ Python + Django
 
 #### Database
 SQLite
+
+#### Additional APIs / Service
+SendGrid for emails (free tier 100 emails a day limit)
