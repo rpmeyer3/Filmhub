@@ -7,3 +7,16 @@ Joshua Grafmiller, jdg66796@uga.edu
 Ryan Meyer, rpm04447@uga.edu
 Will Varner, wjv41345@uga.edu
 Jordan Delp, jad18215@uga.edu
+
+
+____
+### Tech Stack
+
+#### Frontend
+React + Tailwind
+
+#### Backend
+Python + Django
+
+#### Database
+SQLite
