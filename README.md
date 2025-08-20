@@ -2,8 +2,8 @@ Howdy, This will be the project README for our Term Porject in Software Engineer
 
 Team Members:
 
-Kristian Pitshugin, 
-Joshua Grafmiller,
-Ryan Meyer,
-Will Varner.
-
+Kristian Pitshugin, kp39596@uga.edu
+Joshua Grafmiller, jdg66796@uga.edu
+Ryan Meyer, rpm04447@uga.edu
+Will Varner,
+Jordan Delp
