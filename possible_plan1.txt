@@ -20,6 +20,22 @@ Sales reports, show reports, administrator dashboards.
 System Security Module:
 Authorization by role, data security, secure concurrent access.
 
+2. ### Tech Stack
+
+#### Frontend
+React + Tailwind
+
+#### Backend
+Python + Django
+
+#### Database
+SQLite
+
+#### Additional APIs / Service
+SendGrid for emails (free tier 100 emails a day limit) or JavaMailAPI
+
+[OmdbAPI](https://www.omdbapi.com)
+
 
 3. Define the Data Model
 
