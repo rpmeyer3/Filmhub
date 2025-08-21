@@ -22,6 +22,6 @@ Python + Django
 SQLite
 
 #### Additional APIs / Service
-SendGrid for emails (free tier 100 emails a day limit)
+SendGrid for emails (free tier 100 emails a day limit) or JavaMailAPI
 
 [OmdbAPI](https://www.omdbapi.com)
