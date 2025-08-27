@@ -30,38 +30,40 @@ Backend/
 - **OMDB API** - Movie data
 - **SendGrid** - Email service
 
-## Getting Started
+## Getting Started (No Virtual Environment)
 
-1. Create a virtual environment:
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
+1. Navigate to the Backend directory:
+   ```cmd
+   cd Backend
    ```
 
-2. Install dependencies:
-   ```bash
+2. Install dependencies system-wide:
+   ```cmd
    pip install -r requirements.txt
    ```
 
 3. Copy environment variables:
-   ```bash
+   ```cmd
    copy .env.example .env
    ```
    Edit `.env` and add your API keys.
 
 4. Run migrations:
-   ```bash
+   ```cmd
    python manage.py migrate
    ```
 
 5. Create a superuser:
-   ```bash
+   ```cmd
    python manage.py createsuperuser
    ```
 
 6. Start the development server:
-   ```bash
+   ```cmd
    python manage.py runserver
    ```
 
 The API will be available at `http://localhost:8000/api/`
+
+## Note
+Virtual environments have been removed. All packages will be installed system-wide for simplicity.

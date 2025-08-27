@@ -56,12 +56,10 @@ npm install
 npm start
 ```
 
-#### Backend Setup
+#### Backend Setup (System-wide Installation)
 ```cmd
 cd Backend
-python -m venv venv
-venv\Scripts\activate
-pip install Django==4.2.5 djangorestframework==3.14.0 django-cors-headers==4.2.0 python-dotenv==1.0.0 requests==2.31.0 sendgrid==6.10.0 python-http-client==3.3.7
+pip install -r requirements.txt
 copy .env.example .env
 rem Edit .env with your API keys
 python manage.py migrate
