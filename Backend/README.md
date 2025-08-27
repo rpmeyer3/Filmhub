@@ -3,7 +3,7 @@
 This directory will contain the backend/server-side code for the application.
 
 ## Structure
-```
+
 Backend/
 ├── src/
 ├── routes/
@@ -11,7 +11,7 @@ Backend/
 ├── controllers/
 ├── middleware/
 └── config/
-```
+
 
 ## Technologies
 - To be determined based on project requirements

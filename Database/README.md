@@ -3,14 +3,14 @@
 This directory will contain database-related files including schemas, migrations, and seed data.
 
 ## Structure
-```
+
 Database/
 ├── schemas/
 ├── migrations/
 ├── seeds/
 ├── scripts/
 └── backups/
-```
+
 
 ## Database Technology
 - To be determined based on project requirements
