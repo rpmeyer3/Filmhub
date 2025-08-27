@@ -1,23 +1,44 @@
 # Database
 
-This directory will contain database-related files including schemas, migrations, and seed data.
+This directory contains database-related documentation and seed data for the SQLite database.
 
 ## Structure
 
+```
 Database/
-├── schemas/
-├── migrations/
 ├── seeds/
-├── scripts/
-└── backups/
-
+│   └── sample_data.sql
+├── schema.sql (documentation)
+└── README.md
+```
 
 ## Database Technology
-- To be determined based on project requirements
-- Common options: PostgreSQL, MySQL, MongoDB, SQLite
+- **SQLite** - Lightweight database for development
+- **Django ORM** - Object-relational mapping
 
-## Schema Design
-Database schema and entity relationship diagrams will be added here.
+## Database Schema
+
+The database schema is managed by Django migrations. Key models include:
+
+- **Movie** - Stores movie information from OMDB API
+- **UserFavorite** - User's favorite movies
+- **MovieReview** - User reviews and ratings
 
 ## Setup Instructions
-Instructions for setting up the database will be added here.
+
+The database is automatically set up when you run Django migrations:
+
+```bash
+cd Backend
+python manage.py migrate
+```
+
+To load sample data:
+```bash
+python manage.py shell
+# Then manually create sample data or use fixtures
+```
+
+## Database File Location
+
+The SQLite database file (`db.sqlite3`) will be created in the Backend directory when you run migrations.

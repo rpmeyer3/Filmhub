@@ -1,14 +1,53 @@
--- Placeholder database schema file
--- This file will contain the initial database structure
+-- Movie Application Database Schema
+-- This schema will be automatically created by Django migrations
+-- This file is for reference and documentation purposes
 
--- TODO: Define database tables and relationships
--- TODO: Add constraints and indexes
--- TODO: Include sample data structure
-
--- Example placeholder table:
--- CREATE TABLE users (
---     id SERIAL PRIMARY KEY,
---     username VARCHAR(255) NOT NULL,
---     email VARCHAR(255) UNIQUE NOT NULL,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Movies table (created by Django migration)
+-- CREATE TABLE movies_movie (
+--     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     title VARCHAR(255) NOT NULL,
+--     year VARCHAR(4) NOT NULL,
+--     imdb_id VARCHAR(20) UNIQUE NOT NULL,
+--     plot TEXT,
+--     poster_url TEXT,
+--     genre VARCHAR(255),
+--     director VARCHAR(255),
+--     actors TEXT,
+--     runtime VARCHAR(20),
+--     imdb_rating VARCHAR(10),
+--     created_at DATETIME NOT NULL,
+--     updated_at DATETIME NOT NULL
 -- );
+
+-- User favorites table (created by Django migration)
+-- CREATE TABLE movies_userfavorite (
+--     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     user_id INTEGER NOT NULL,
+--     movie_id INTEGER NOT NULL,
+--     created_at DATETIME NOT NULL,
+--     FOREIGN KEY (user_id) REFERENCES auth_user (id),
+--     FOREIGN KEY (movie_id) REFERENCES movies_movie (id),
+--     UNIQUE(user_id, movie_id)
+-- );
+
+-- Movie reviews table (created by Django migration)
+-- CREATE TABLE movies_moviereview (
+--     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     user_id INTEGER NOT NULL,
+--     movie_id INTEGER NOT NULL,
+--     rating INTEGER NOT NULL,
+--     review_text TEXT,
+--     created_at DATETIME NOT NULL,
+--     updated_at DATETIME NOT NULL,
+--     FOREIGN KEY (user_id) REFERENCES auth_user (id),
+--     FOREIGN KEY (movie_id) REFERENCES movies_movie (id),
+--     UNIQUE(user_id, movie_id)
+-- );
+
+-- Indexes for better performance
+-- CREATE INDEX idx_movies_imdb_id ON movies_movie(imdb_id);
+-- CREATE INDEX idx_movies_title ON movies_movie(title);
+-- CREATE INDEX idx_movies_year ON movies_movie(year);
+-- CREATE INDEX idx_favorites_user ON movies_userfavorite(user_id);
+-- CREATE INDEX idx_reviews_movie ON movies_moviereview(movie_id);
+-- CREATE INDEX idx_reviews_rating ON movies_moviereview(rating);
