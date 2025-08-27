@@ -21,34 +21,49 @@ A movie application that allows users to search for movies, view details, save f
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 16+ and npm
-- Python 3.8+
-- Git
+## Prerequisites
+- **Node.js 16+ and npm** - Download from [nodejs.org](https://nodejs.org/)
+- **Python 3.8+** - Download from [python.org](https://python.org/)
+- **Git** - Download from [git-scm.com](https://git-scm.com/)
 
-### Setup
+## Setup
+
+### Option 1: Quick Setup (if you have Node.js and Python installed)
 1. Clone the repository
 2. Run setup script:
    - Windows: `setup.bat`
    - Linux/Mac: `./setup.sh`
 
-### Manual Setup
+### Option 2: Manual Setup (Recommended for first-time setup)
 
-#### Frontend
-```bash
+#### Install Prerequisites First:
+1. **Install Node.js:**
+   - Go to https://nodejs.org/
+   - Download LTS version for Windows
+   - Run installer and restart command prompt
+   - Verify: `node --version` and `npm --version`
+
+2. **Install Python:**
+   - Go to https://python.org/
+   - Download Python 3.8+ for Windows
+   - **Important:** Check "Add Python to PATH" during installation
+   - Verify: `python --version`
+
+#### Frontend Setup
+```cmd
 cd Frontend
 npm install
 npm start
 ```
 
-#### Backend
-```bash
+#### Backend Setup
+```cmd
 cd Backend
 python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-pip install -r requirements.txt
-copy .env.example .env  # Edit with your API keys
+venv\Scripts\activate
+pip install Django==4.2.5 djangorestframework==3.14.0 django-cors-headers==4.2.0 python-dotenv==1.0.0 requests==2.31.0 sendgrid==6.10.0 python-http-client==3.3.7
+copy .env.example .env
+rem Edit .env with your API keys
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
