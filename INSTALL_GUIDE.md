@@ -1,9 +1,9 @@
 # Installation Guide for Movie App
 
 ## Current Status
-✅ Python virtual environment is set up  
-✅ Django dependencies are installed  
-❌ Node.js and npm are not installed (needed for React frontend)
+Python virtual environment is set up  
+Django dependencies are installed  
+Node.js and npm are not installed (needed for React frontend)
 
 ## What You Need to Install
 
@@ -90,12 +90,12 @@ npm start
 Software-Engineering/
 ├── Frontend/
 │   ├── node_modules/     # Created after npm install
-│   ├── package.json      ✅ Ready
-│   └── src/             ✅ Ready
+│   ├── package.json      Ready
+│   └── src/             Ready
 ├── Backend/
-│   ├── venv/            ✅ Already set up
+│   ├── venv/            Already set up
 │   ├── db.sqlite3       # Created after migrate
-│   ├── manage.py        ✅ Ready
-│   └── requirements.txt ✅ Installed
-└── Database/            ✅ Ready
+│   ├── manage.py        Ready
+│   └── requirements.txt Installed
+└── Database/            Ready
 ```
