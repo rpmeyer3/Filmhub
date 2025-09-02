@@ -22,26 +22,26 @@ A movie application that allows users to search for movies, view details, save f
 ## Quick Start
 
 ## Prerequisites
-- **Node.js 16+ and npm** - Download from [nodejs.org](https://nodejs.org/)
-- **Python 3.8+** - Download from [python.org](https://python.org/)
-- **PostgreSQL 12+** - Download from [postgresql.org](https://postgresql.org/)
-- **Git** - Download from [git-scm.com](https://git-scm.com/)
+- Node.js 16+ and npm - Download from [nodejs.org](https://nodejs.org/)
+- Python 3.8+ - Download from [python.org](https://python.org/)
+- PostgreSQL 12+ - Download from [postgresql.org](https://postgresql.org/)
+- Git - Download from [git-scm.com](https://git-scm.com/)
 
 ## Setup
 
 ### Manual Setup (Step-by-step instructions)
 
 #### Install Prerequisites First:
-1. **Install Node.js:**
+1. Install Node.js:
    - Go to https://nodejs.org/
    - Download LTS version for Windows
    - Run installer and restart command prompt
    - Verify: `node --version` and `npm --version`
 
-2. **Install Python:**
+2. Install Python:
    - Go to https://python.org/
    - Download Python 3.8+ for Windows
-   - **Important:** Check "Add Python to PATH" during installation
+   - Important: Check "Add Python to PATH" during installation
    - Verify: `python --version`
 
 #### Frontend Setup

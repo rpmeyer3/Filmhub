@@ -72,7 +72,7 @@ The system must provide a browse facility. Initially, the home page will be filt
 The system must provide the web users with an interface to a search and filtering facility; users can search movies by category, title, or show date. Relevant search results should be displayed on screen. The menu should be updated to show the selected movie show dates.
  
 
-When filtering by a specific date, all show times for that date should be displayed.  **
+When filtering by a specific date, all show times for that date should be displayed.
 
  
 
@@ -97,10 +97,10 @@ Order total price is the sum of tickets prices, sales tax, and online fees.
 Customers must be able to view their order history.
  
 
-Users should be able to return their tickets. Customers will receive a refund if they canceled the ticket(s) up to 60 minutes before the show time. ** Low prioriority
+Users should be able to return their tickets. Customers will receive a refund if they canceled the ticket(s) up to 60 minutes before the show time. Low priority
  
 
-The system must enable managers and administrators to pull predefined reports; namely sales reports and show reports. ………….. applying filters. *** dropped
+The system must enable managers and administrators to pull predefined reports; namely sales reports and show reports. ………….. applying filters. dropped
  
 
 The system must provide multi-user access, assuring correct concurrent behavior. 

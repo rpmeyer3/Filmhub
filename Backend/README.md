@@ -21,33 +21,33 @@ Backend/
 ```
 
 ## Technologies
-- **Python 3.8+** - Programming language
-- **Django 4.2** - Web framework
-- **Django REST Framework** - API framework
-- **PostgreSQL** - Database
+- Python 3.8+ - Programming language
+- Django 4.2 - Web framework
+- Django REST Framework - API framework
+- PostgreSQL - Database
 
 ## External APIs
-- **OMDB API** - Movie data
-- **SendGrid** - Email service
+- OMDB API - Movie data
+- SendGrid - Email service
 
 ## Getting Started (No Virtual Environment)
 
-1. **Install PostgreSQL:**
+1. Install PostgreSQL:
    - Download from https://postgresql.org/download/
    - Install and remember your postgres user password
    - Create a database called `movie_app_db`
 
-2. **Navigate to the Backend directory:**
+2. Navigate to the Backend directory:
    ```cmd
    cd Backend
    ```
 
-3. **Install dependencies system-wide:**
+3. Install dependencies system-wide:
    ```cmd
    pip install -r requirements.txt
    ```
 
-4. **Configure database:**
+4. Configure database:
    ```cmd
    copy .env.example .env
    ```
@@ -55,17 +55,17 @@ Backend/
    - DATABASE_PASSWORD=your-postgres-password
    - Add your API keys
 
-5. **Run migrations:**
+5. Run migrations:
    ```cmd
    python manage.py migrate
    ```
 
-6. **Create a superuser:**
+6. Create a superuser:
    ```cmd
    python manage.py createsuperuser
    ```
 
-7. **Start the development server:**
+7. Start the development server:
    ```cmd
    python manage.py runserver
    ```

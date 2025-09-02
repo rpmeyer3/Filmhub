@@ -13,16 +13,16 @@ Database/
 ```
 
 ## Database Technology
-- **PostgreSQL** - Production-grade relational database
-- **Django ORM** - Object-relational mapping
+- PostgreSQL - Production-grade relational database
+- Django ORM - Object-relational mapping
 
 ## Database Schema
 
 The database schema is managed by Django migrations. Key models include:
 
-- **Movie** - Stores movie information from OMDB API
-- **UserFavorite** - User's favorite movies
-- **MovieReview** - User reviews and ratings
+- Movie - Stores movie information from OMDB API
+- UserFavorite - User's favorite movies
+- MovieReview - User reviews and ratings
 
 ## Setup Instructions
 

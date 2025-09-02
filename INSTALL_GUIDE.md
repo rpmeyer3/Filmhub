@@ -9,14 +9,14 @@ Node.js and npm are not installed (needed for React frontend)
 
 ### 1. Install Node.js (Required for Frontend)
 
-**Download and Install:**
+Download and Install:
 1. Go to https://nodejs.org/
-2. Download the **LTS version** (currently Node.js 18.x or 20.x)
+2. Download the LTS version (currently Node.js 18.x or 20.x)
 3. Run the installer (.msi file for Windows)
 4. During installation, make sure "Add to PATH" is checked
 5. Restart your command prompt/terminal after installation
 
-**Verify Installation:**
+Verify Installation:
 ```cmd
 node --version
 npm --version
@@ -58,13 +58,13 @@ python manage.py createsuperuser
 ```
 
 ### 4. Start Development Servers
-**Terminal 1 (Backend):**
+Terminal 1 (Backend):
 ```cmd
 cd Backend
 python manage.py runserver
 ```
 
-**Terminal 2 (Frontend):**
+Terminal 2 (Frontend):
 ```cmd
 cd Frontend
 npm start
@@ -72,15 +72,15 @@ npm start
 
 ## Troubleshooting
 
-**If you get "npm is not recognized":**
+If you get "npm is not recognized":
 - Node.js is not installed or not in your PATH
 - Install Node.js from nodejs.org and restart your terminal
 
-**If you get Python errors:**
+If you get Python errors:
 - Make sure your virtual environment is activated: `venv\Scripts\activate`
 - Your current environment should show `(venv)` in the prompt
 
-**If Django commands fail:**
+If Django commands fail:
 - Ensure you're in the Backend directory
 - Ensure virtual environment is activated
 - All Django packages are already installed
