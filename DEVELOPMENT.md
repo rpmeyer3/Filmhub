@@ -29,13 +29,7 @@ A movie application that allows users to search for movies, view details, save f
 
 ## Setup
 
-### Option 1: Quick Setup (if you have Node.js and Python installed)
-1. Clone the repository
-2. Run setup script:
-   - Windows: `setup.bat`
-   - Linux/Mac: `./setup.sh`
-
-### Option 2: Manual Setup (Recommended for first-time setup)
+### Manual Setup (Step-by-step instructions)
 
 #### Install Prerequisites First:
 1. **Install Node.js:**
@@ -118,6 +112,6 @@ Software-Engineering/
 ├── Frontend/          # React application
 ├── Backend/           # Django API server
 ├── Database/          # Database documentation and seeds
-├── setup.bat         # Windows setup script
-└── setup.sh          # Linux/Mac setup script
+├── DEVELOPMENT.md     # Development guide
+└── INSTALL_GUIDE.md   # Installation guide
 ```
