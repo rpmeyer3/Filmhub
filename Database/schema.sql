@@ -1,10 +1,10 @@
--- Movie Application Database Schema
+-- Movie Application Database Schema (PostgreSQL)
 -- This schema will be automatically created by Django migrations
 -- This file is for reference and documentation purposes
 
 -- Movies table (created by Django migration)
 -- CREATE TABLE movies_movie (
---     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     id SERIAL PRIMARY KEY,
 --     title VARCHAR(255) NOT NULL,
 --     year VARCHAR(4) NOT NULL,
 --     imdb_id VARCHAR(20) UNIQUE NOT NULL,
@@ -15,16 +15,16 @@
 --     actors TEXT,
 --     runtime VARCHAR(20),
 --     imdb_rating VARCHAR(10),
---     created_at DATETIME NOT NULL,
---     updated_at DATETIME NOT NULL
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 -- );
 
 -- User favorites table (created by Django migration)
 -- CREATE TABLE movies_userfavorite (
---     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     id SERIAL PRIMARY KEY,
 --     user_id INTEGER NOT NULL,
 --     movie_id INTEGER NOT NULL,
---     created_at DATETIME NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
 --     FOREIGN KEY (user_id) REFERENCES auth_user (id),
 --     FOREIGN KEY (movie_id) REFERENCES movies_movie (id),
 --     UNIQUE(user_id, movie_id)
@@ -32,13 +32,13 @@
 
 -- Movie reviews table (created by Django migration)
 -- CREATE TABLE movies_moviereview (
---     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     id SERIAL PRIMARY KEY,
 --     user_id INTEGER NOT NULL,
 --     movie_id INTEGER NOT NULL,
 --     rating INTEGER NOT NULL,
 --     review_text TEXT,
---     created_at DATETIME NOT NULL,
---     updated_at DATETIME NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+--     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
 --     FOREIGN KEY (user_id) REFERENCES auth_user (id),
 --     FOREIGN KEY (movie_id) REFERENCES movies_movie (id),
 --     UNIQUE(user_id, movie_id)

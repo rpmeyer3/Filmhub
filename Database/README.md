@@ -13,7 +13,7 @@ Database/
 ```
 
 ## Database Technology
-- **SQLite** - Lightweight database for development
+- **PostgreSQL** - Production-grade relational database
 - **Django ORM** - Object-relational mapping
 
 ## Database Schema
@@ -26,7 +26,7 @@ The database schema is managed by Django migrations. Key models include:
 
 ## Setup Instructions
 
-The database is automatically set up when you run Django migrations:
+The database is set up when you run Django migrations with PostgreSQL:
 
 ```bash
 cd Backend
@@ -39,6 +39,14 @@ python manage.py shell
 # Then manually create sample data or use fixtures
 ```
 
+## PostgreSQL Configuration
+
+Make sure you have PostgreSQL installed and running:
+1. Install PostgreSQL from https://postgresql.org/download/
+2. Create a database for the project
+3. Update your `.env` file with database credentials
+
 ## Database File Location
 
-The SQLite database file (`db.sqlite3`) will be created in the Backend directory when you run migrations.
+PostgreSQL data is stored in the PostgreSQL server installation directory. 
+Database connection details are configured in the Django settings.

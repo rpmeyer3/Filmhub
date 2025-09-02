@@ -13,7 +13,7 @@ A movie application that allows users to search for movies, view details, save f
 ### Backend  
 - Python + Django 4.2
 - Django REST Framework
-- SQLite database
+- PostgreSQL database
 
 ### External APIs
 - [OMDB API](https://www.omdbapi.com) for movie data
@@ -24,6 +24,7 @@ A movie application that allows users to search for movies, view details, save f
 ## Prerequisites
 - **Node.js 16+ and npm** - Download from [nodejs.org](https://nodejs.org/)
 - **Python 3.8+** - Download from [python.org](https://python.org/)
+- **PostgreSQL 12+** - Download from [postgresql.org](https://postgresql.org/)
 - **Git** - Download from [git-scm.com](https://git-scm.com/)
 
 ## Setup
@@ -101,6 +102,11 @@ Create `.env` file in Backend directory:
 ```
 DEBUG=True
 SECRET_KEY=your-secret-key
+DATABASE_NAME=movie_app_db
+DATABASE_USER=postgres
+DATABASE_PASSWORD=your-postgres-password
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
 OMDB_API_KEY=your-omdb-api-key
 SENDGRID_API_KEY=your-sendgrid-api-key
 FROM_EMAIL=your-email@example.com

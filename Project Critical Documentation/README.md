@@ -19,7 +19,7 @@ React + Tailwind
 Python + Django
 
 #### Database
-SQLite
+PostgreSQL
 
 #### Additional APIs / Service
 SendGrid for emails (free tier 100 emails a day limit) or JavaMailAPI
