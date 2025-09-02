@@ -4,13 +4,11 @@ This directory contains database-related documentation and seed data for the SQL
 
 ## Structure
 
-```
 Database/
 ├── seeds/
 │   └── sample_data.sql
 ├── schema.sql (documentation)
 └── README.md
-```
 
 ## Database Technology
 - PostgreSQL - Production-grade relational database
@@ -28,16 +26,16 @@ The database schema is managed by Django migrations. Key models include:
 
 The database is set up when you run Django migrations with PostgreSQL:
 
-```bash
+bash
 cd Backend
 python manage.py migrate
-```
+
 
 To load sample data:
-```bash
+bash
 python manage.py shell
 # Then manually create sample data or use fixtures
-```
+
 
 ## PostgreSQL Configuration
 
