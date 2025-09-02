@@ -1,4 +1,4 @@
----
+
 ### High-Level System Requirements
 
 - The system must allow the system administrator to enter movie information. For each movie, the system must record movie title, category, cast, director, producer, synopsis, reviews, trailer picture and video, MPAA-US film rating code [1], and show dates and times.
@@ -6,7 +6,6 @@
 - The system must allow the system administrator to delete and update movie information. They must also be able to add new administrators, delete or update all members’ information, in some cases the administrator might suspend a member account.
 - The system must allow the system administrator to add promotions to the systems. The system must send email promotions, offered by the system administrator, to all registered users who have subscribed for promotions.
 
----
 ### User Registration and Profiles
 
 - The system must allow web users to register for the system. To register, users should provide their password, personal information (name, phone number, email address, and password). They might optionally, provide payment information (card type, number, and expiration date, and billing address) and home address info (street, city, state and zip code).
@@ -16,7 +15,6 @@
 - Registered users can subscribe/unsubscribe for promotions and offered by the system administrator.
 - Registered user must be able to view and modify their user profile at any time. They may also change their password. However, users cannot change their email address.
 
----
 ### Booking and Search Functionality
 
 - The system should provide a booking facility for all users. This should be available on all relevant screens such as browsing and searching.
@@ -28,7 +26,6 @@
 - Users should be able to select their seats. The system must provide a graphical view of the hall and seats so that users can select their seats easily.
 - Only registered and signed-in users can book tickets. If the user is not signed-in, the system should display the login page.
 
----
 ### Payment and Confirmation
 
 - The system must provide a secured checkout (payment) facility. The system must allow customers to use their promotion codes in order to take advantage of current discount promotions.
@@ -37,7 +34,6 @@
 - Customers must be able to view their order history.
 - Users should be able to return their tickets. Customers will receive a refund if they canceled the ticket(s) up to 60 minutes before the show time.
 
----
 ### Security and Technical Requirements
 
 - The system must enable managers and administrators to pull predefined reports; namely sales reports and show reports.

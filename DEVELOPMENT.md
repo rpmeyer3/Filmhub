@@ -45,14 +45,14 @@ A movie application that allows users to search for movies, view details, save f
    - Verify: `python --version`
 
 #### Frontend Setup
-```cmd
+cmd
 cd Frontend
 npm install
 npm start
-```
+
 
 #### Backend Setup (System-wide Installation)
-```cmd
+cmd
 cd Backend
 pip install -r requirements.txt
 copy .env.example .env
@@ -60,7 +60,6 @@ rem Edit .env with your API keys
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
-```
 
 ## Development URLs
 - Frontend: http://localhost:3000
@@ -93,7 +92,7 @@ python manage.py runserver
 ## Environment Variables
 
 Create `.env` file in Backend directory:
-```
+
 DEBUG=True
 SECRET_KEY=your-secret-key
 DATABASE_NAME=movie_app_db
@@ -104,14 +103,13 @@ DATABASE_PORT=5432
 OMDB_API_KEY=your-omdb-api-key
 SENDGRID_API_KEY=your-sendgrid-api-key
 FROM_EMAIL=your-email@example.com
-```
+
 
 ## Project Structure
-```
+
 Software-Engineering/
 ├── Frontend/          # React application
 ├── Backend/           # Django API server
 ├── Database/          # Database documentation and seeds
 ├── DEVELOPMENT.md     # Development guide
 └── INSTALL_GUIDE.md   # Installation guide
-```

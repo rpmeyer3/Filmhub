@@ -4,7 +4,6 @@ This directory contains the React frontend application with Tailwind CSS for sty
 
 ## Structure
 
-```
 Frontend/
 ├── src/
 │   ├── components/
@@ -14,7 +13,6 @@ Frontend/
 │   └── utils/
 ├── public/
 └── build/
-```
 
 ## Technologies
 - React 18 - UI framework
@@ -36,29 +34,27 @@ Frontend/
    - Restart your command prompt after installation
 
 2. Verify installation:
-   ```cmd
+   cmd
    node --version
    npm --version
-   ```
+   
 
 3. Navigate to Frontend directory:
-   ```cmd
+   cmd
    cd Frontend
-   ```
+   
 
 4. Install dependencies:
-   ```cmd
+   cmd
    npm install
-   ```
+   
 
 5. Start the development server:
-   ```cmd
+   cmd
    npm start
-   ```
 
 6. Build for production:
-   ```cmd
+   cmd
    npm run build
-   ```
-
+   
 The application will be available at `http://localhost:3000`

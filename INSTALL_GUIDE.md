@@ -17,10 +17,10 @@ Download and Install:
 5. Restart your command prompt/terminal after installation
 
 Verify Installation:
-```cmd
+cmd
 node --version
 npm --version
-```
+
 You should see version numbers for both commands.
 
 ### 2. Backend Setup (Already Done!)
@@ -36,42 +36,41 @@ Your Python environment is already configured with these packages:
 ## Next Steps After Installing Node.js
 
 ### 1. Install Frontend Dependencies
-```cmd
+cmd
 cd Frontend
 npm install
-```
+
 
 ### 2. Set Up Environment Variables
-```cmd
+cmd
 cd Backend
 copy .env.example .env
-```
+
 Then edit the `.env` file with your API keys:
 - Get OMDB API key from: https://www.omdbapi.com/
 - Get SendGrid API key from: https://sendgrid.com/
 
 ### 3. Initialize Database
-```cmd
+cmd
 cd Backend
 python manage.py migrate
 python manage.py createsuperuser
-```
+
 
 ### 4. Start Development Servers
 Terminal 1 (Backend):
-```cmd
+cmd
 cd Backend
 python manage.py runserver
-```
+
 
 Terminal 2 (Frontend):
-```cmd
+cmd
 cd Frontend
 npm start
-```
+
 
 ## Troubleshooting
-
 If you get "npm is not recognized":
 - Node.js is not installed or not in your PATH
 - Install Node.js from nodejs.org and restart your terminal
@@ -86,7 +85,6 @@ If Django commands fail:
 - All Django packages are already installed
 
 ## File Structure After Setup
-```
 Software-Engineering/
 ├── Frontend/
 │   ├── node_modules/     # Created after npm install
@@ -98,4 +96,3 @@ Software-Engineering/
 │   ├── manage.py        Ready
 │   └── requirements.txt Installed
 └── Database/            Ready
-```
