@@ -6,13 +6,13 @@ import Image from 'next/image'
 export default function MovieListings() {
   const [activeTab, setActiveTab] = useState('now-playing')
 
-  // Mock movie data (you'll replace this with OMDB API data later)
+  // Mock movie data (replace with API calls to your Django backend)
   const movies = {
     'now-playing': [
       {
         id: 1,
         title: "The Batman",
-        poster: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=400&h=600&fit=crop",
+        poster: "/api/placeholder/400/600", // Will come from your backend/OMDB
         rating: "PG-13",
         genre: "Action, Crime",
         duration: "2h 56m",
@@ -23,7 +23,7 @@ export default function MovieListings() {
       {
         id: 2,
         title: "Dune",
-        poster: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop", 
+        poster: "/api/placeholder/400/600", 
         rating: "PG-13",
         genre: "Sci-Fi, Adventure",
         duration: "2h 35m",
@@ -34,7 +34,7 @@ export default function MovieListings() {
       {
         id: 3,
         title: "No Time to Die",
-        poster: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=400&h=600&fit=crop",
+        poster: "/api/placeholder/400/600",
         rating: "PG-13", 
         genre: "Action, Thriller",
         duration: "2h 43m",
@@ -45,7 +45,7 @@ export default function MovieListings() {
       {
         id: 4,
         title: "Eternals",
-        poster: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=400&h=600&fit=crop",
+        poster: "/api/placeholder/400/600",
         rating: "PG-13",
         genre: "Action, Adventure",
         duration: "2h 37m", 
@@ -58,7 +58,7 @@ export default function MovieListings() {
       {
         id: 5,
         title: "Doctor Strange 2",
-        poster: "https://images.unsplash.com/photo-1489599112026-11f47e4ea8f8?w=400&h=600&fit=crop",
+        poster: "/api/placeholder/400/600",
         rating: "PG-13",
         genre: "Action, Adventure",
         duration: "2h 6m",
@@ -68,7 +68,7 @@ export default function MovieListings() {
       {
         id: 6,
         title: "Thor: Love and Thunder", 
-        poster: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&h=600&fit=crop",
+        poster: "/api/placeholder/400/600",
         rating: "PG-13",
         genre: "Action, Comedy",
         duration: "1h 59m",

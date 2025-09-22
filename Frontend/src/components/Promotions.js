@@ -12,7 +12,7 @@ export default function Promotions() {
       price: "$19.95/month",
       features: ["Up to 3 movies per week", "All formats included", "No online fees", "Exclusive screenings", "Priority lanes"],
       buttonText: "Join Now",
-      image: "https://images.unsplash.com/photo-1489599112026-11f47e4ea8f8?w=600&h=400&fit=crop",
+      image: "/api/placeholder/600/400", // Will be replaced with actual promotional images
       gradient: "from-purple-600 to-blue-600"
     },
     {
@@ -22,7 +22,7 @@ export default function Promotions() {
       description: "Experience movies the way filmmakers intended with crystal clear images, wraparound sound and premium seating.",
       features: ["70ft screens", "12-channel sound", "Reserved seating", "Stadium seating"],
       buttonText: "Find IMAX Movies",
-      image: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600&h=400&fit=crop",
+      image: "/api/placeholder/600/400",
       gradient: "from-gray-800 to-gray-600"
     },
     {
@@ -32,7 +32,7 @@ export default function Promotions() {
       description: "Spectacular imaging with Dolby Vision and moving audio with Dolby Atmos creates a completely captivating cinematic experience.",
       features: ["Dolby Vision projection", "Dolby Atmos sound", "Luxury recliners", "Reserved seating"],
       buttonText: "Experience Dolby",
-      image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&h=400&fit=crop", 
+      image: "/api/placeholder/600/400", 
       gradient: "from-red-600 to-pink-600"
     }
   ]
@@ -187,12 +187,9 @@ export default function Promotions() {
               </button>
             </div>
             <div className="relative h-64 md:h-full">
-              <Image
-                src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400&fit=crop"
-                alt="Movie concessions"
-                fill
-                className="object-cover"
-              />
+              <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center text-white text-6xl">
+                🍿
+              </div>
             </div>
           </div>
         </div>

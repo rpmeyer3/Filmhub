@@ -6,13 +6,13 @@ import Image from 'next/image'
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
 
-  // Mock featured movies data (you'll replace this with OMDB API data later)
+  // Mock featured movies data (replace with API calls to your Django backend)
   const featuredMovies = [
     {
       id: 1,
       title: "Avengers: Endgame",
-      poster: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=800&h=1200&fit=crop",
-      backdrop: "https://images.unsplash.com/photo-1489599112026-11f47e4ea8f8?w=1920&h=1080&fit=crop",
+      poster: "/api/placeholder/400/600", // Will come from your backend
+      backdrop: "/api/placeholder/1920/1080", // Will come from your backend
       rating: "PG-13",
       genre: "Action, Adventure",
       description: "The epic conclusion to the Infinity Saga that became a critically acclaimed worldwide phenomenon.",
@@ -21,8 +21,8 @@ export default function Hero() {
     {
       id: 2,
       title: "Spider-Man: No Way Home", 
-      poster: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800&h=1200&fit=crop",
-      backdrop: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=1920&h=1080&fit=crop",
+      poster: "/api/placeholder/400/600",
+      backdrop: "/api/placeholder/1920/1080",
       rating: "PG-13",
       genre: "Action, Adventure",
       description: "Spider-Man's identity is revealed and he must ask for help from Doctor Strange.",
@@ -31,8 +31,8 @@ export default function Hero() {
     {
       id: 3,
       title: "Top Gun: Maverick",
-      poster: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800&h=1200&fit=crop",
-      backdrop: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&h=1080&fit=crop",
+      poster: "/api/placeholder/400/600",
+      backdrop: "/api/placeholder/1920/1080",
       rating: "PG-13", 
       genre: "Action, Drama",
       description: "After thirty years, Maverick is still pushing the envelope as a top naval aviator.",
