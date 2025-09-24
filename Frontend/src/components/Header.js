@@ -5,15 +5,11 @@ import Link from 'next/link'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 bg-black text-white shadow-lg">
       <div className="container mx-auto px-4">
-        {/* Top bar with promotions */}
-        <div className="hidden md:block bg-red-600 text-center py-1 text-sm">
-          <span>🎬 Cinema E-Booking System - Book your favorite movies online!</span>
-        </div>
-
         {/* Main navigation */}
         <nav className="flex items-center justify-between py-4">
           {/* Logo */}
