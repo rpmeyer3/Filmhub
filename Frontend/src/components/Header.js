@@ -1,45 +1,41 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 bg-black text-white shadow-lg">
       <div className="container mx-auto px-4">
         {/* Top bar with promotions */}
         <div className="hidden md:block bg-red-600 text-center py-1 text-sm">
-          <span>🎬 Get AMC Stubs A-List for just $19.95/month - Watch up to 3 movies per week!</span>
+          <span>🎬 Cinema E-Booking System - Book your favorite movies online!</span>
         </div>
 
         {/* Main navigation */}
         <nav className="flex items-center justify-between py-4">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="text-2xl font-bold text-red-500 mr-8">
-              🎬 MovieTheater
-            </div>
+            <Link href="/" className="text-2xl font-bold text-red-500 hover:text-red-400 transition-colors">
+              🎬 Cinema E-Booking
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
+            <Link href="/" className="hover:text-red-400 transition-colors font-medium">
+              Home
+            </Link>
             <a href="#movies" className="hover:text-red-400 transition-colors font-medium">
               Movies
             </a>
-            <a href="#theatres" className="hover:text-red-400 transition-colors font-medium">
-              Theatres
+            <a href="#about" className="hover:text-red-400 transition-colors font-medium">
+              About
             </a>
-            <a href="#food" className="hover:text-red-400 transition-colors font-medium">
-              Food & Drinks
-            </a>
-            <a href="#rewards" className="hover:text-red-400 transition-colors font-medium">
-              Rewards
-            </a>
-            <a href="#on-demand" className="hover:text-red-400 transition-colors font-medium">
-              On Demand
+            <a href="#contact" className="hover:text-red-400 transition-colors font-medium">
+              Contact
             </a>
           </div>
 

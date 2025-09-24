@@ -1,7 +1,11 @@
 from django.urls import path
 from . import views
+from .health import HealthCheckView
 
 urlpatterns = [
+    # Health check
+    path('health/', HealthCheckView.as_view(), name='health-check'),
+    
     # Movie endpoints
     path('movies/', views.MovieListView.as_view(), name='movie-list'),
     path('movies/<str:imdb_id>/', views.MovieDetailView.as_view(), name='movie-detail'),

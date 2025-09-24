@@ -1,0 +1,77 @@
+'use client'
+
+import Image from 'next/image'
+import Link from 'next/link'
+
+export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8:00 PM'] }) {
+  const handleShowtimeClick = (showtime, e) => {
+    e.preventDefault();
+    // Navigate to booking page with movie and showtime
+    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&imdbId=${movie.imdb_id}&showtime=${encodeURIComponent(showtime)}`;
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+      {/* Movie Poster */}
+      <div className="relative h-96">
+        <Link href={`/movie/${movie.imdb_id}`}>
+          {movie.poster_url && movie.poster_url !== 'N/A' ? (
+            <Image
+              src={movie.poster_url}
+              alt={movie.title}
+              fill
+              className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center cursor-pointer">
+              <span className="text-gray-500 text-lg">No Image</span>
+            </div>
+          )}
+        </Link>
+      </div>
+
+      {/* Movie Info */}
+      <div className="p-4">
+        <Link href={`/movie/${movie.imdb_id}`}>
+          <h3 className="font-bold text-lg mb-2 hover:text-red-600 cursor-pointer line-clamp-2">
+            {movie.title}
+          </h3>
+        </Link>
+        
+        <div className="flex items-center mb-2">
+          <span className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded mr-2">
+            {movie.year}
+          </span>
+          {movie.imdb_rating && movie.imdb_rating !== 'N/A' && (
+            <span className="text-yellow-500 text-sm">
+              ⭐ {movie.imdb_rating}
+            </span>
+          )}
+        </div>
+
+        {movie.genre && movie.genre !== 'N/A' && (
+          <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+            {movie.genre}
+          </p>
+        )}
+
+        {/* Showtimes */}
+        <div className="border-t pt-3">
+          <p className="text-sm font-semibold text-gray-800 mb-2">Showtimes:</p>
+          <div className="flex flex-wrap gap-2">
+            {showTimes.map((time) => (
+              <button
+                key={time}
+                onClick={(e) => handleShowtimeClick(time, e)}
+                className="bg-red-600 text-white text-xs px-3 py-1 rounded hover:bg-red-700 transition-colors"
+              >
+                {time}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
