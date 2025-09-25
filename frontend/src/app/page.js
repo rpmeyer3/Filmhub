@@ -20,12 +20,39 @@ export default function Home() {
   const fetchMovies = async () => {
     try {
       setLoading(true)
-      const movieData = await ApiService.getMovies()
+      const response = await ApiService.getMovies()
+      
+      // Handle the new comprehensive Supabase API response format with all relationships
+      const movieData = response.movies ? response.movies.map(movie => ({
+        id: movie.id,
+        imdb_id: movie.id.toString(), // Use database id as imdb_id for now
+        title: movie.title,
+        year: '2024', // Default year since not in current data
+        plot: movie.synopsis,
+        poster_url: movie.poster_url,
+        genre: movie.categories ? movie.categories.join(', ') : movie.mpaa_rating, // Use categories as genres
+        director: movie.directors ? movie.directors.join(', ') : 'Director TBD',
+        actors: movie.cast ? movie.cast.join(', ') : 'Cast TBD',
+        producers: movie.producers ? movie.producers.join(', ') : 'Producers TBD',
+        runtime: '120 min', // Default runtime
+        imdb_rating: movie.rating?.toString() || '0',
+        trailer_url: movie.trailer_url,
+        trailer_pic: movie.trailer_pic_url,
+        mpaa_rating: movie.mpaa_rating,
+        is_running: movie.is_running,
+        is_coming_soon: movie.is_coming_soon,
+        // Additional data for richer display
+        categories: movie.categories || [],
+        cast: movie.cast || [],
+        directors: movie.directors || [],
+        producers: movie.producers || []
+      })) : []
+      
       setMovies(movieData)
       setFilteredMovies(movieData)
     } catch (err) {
       // Fallback to demo data when backend is not available
-      console.log('Backend not available, using demo data')
+      console.log('Backend not available, using demo data:', err)
       const demoMovies = [
         {
           imdb_id: 'tt0133093',
@@ -118,14 +145,9 @@ export default function Home() {
     setFilteredMovies(filtered)
   }
 
-  // Separate movies into Currently Running and Coming Soon
-  const currentYear = new Date().getFullYear()
-  const currentlyRunning = filteredMovies.filter(movie =>
-    parseInt(movie.year) >= currentYear - 1
-  )
-  const comingSoon = filteredMovies.filter(movie =>
-    parseInt(movie.year) > currentYear
-  )
+  // Separate movies into Currently Running and Coming Soon using database flags
+  const currentlyRunning = filteredMovies.filter(movie => movie.is_running === true)
+  const comingSoon = filteredMovies.filter(movie => movie.is_coming_soon === true)
 
   if (loading && movies.length === 0) {
     return (
