@@ -9,7 +9,7 @@ import ApiService from '../../../services/api'
 
 export default function MovieDetails() {
   const params = useParams()
-  const { imdbId } = params
+  const { movieId } = params
   const [movie, setMovie] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -17,15 +17,15 @@ export default function MovieDetails() {
   const showTimes = ['2:00 PM', '5:00 PM', '8:00 PM']
 
   useEffect(() => {
-    if (imdbId) {
+    if (movieId) {
       fetchMovieDetails()
     }
-  }, [imdbId])
+  }, [movieId])
 
   const fetchMovieDetails = async () => {
     try {
       setLoading(true)
-      const movieData = await ApiService.getMovie(imdbId)
+      const movieData = await ApiService.getMovie(movieId)
       setMovie(movieData)
     } catch (err) {
       setError('Failed to load movie details. Please try again later.')
@@ -42,16 +42,27 @@ export default function MovieDetails() {
   const getTrailerUrl = () => {
     if (!movie?.title) return null
     
-    // For demo purposes, create a YouTube search URL based on movie title
-    // In a real app, you'd store trailer URLs in the database
+    // Use actual trailer URL from database if available
+    if (movie.trailer_url) {
+      return movie.trailer_url
+    }
+    
+    // Fallback to YouTube search
     const searchQuery = `${movie.title} ${movie.year} trailer`
     return `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`
   }
 
   const getEmbedTrailerUrl = () => {
-    // For demo, we'll use a placeholder YouTube video
-    // In production, you'd have actual trailer IDs stored in the database
-    return "https://www.youtube.com/embed/dQw4w9WgXcQ" // Rick Roll as placeholder
+    // Use actual trailer URL from database if available
+    if (movie?.trailer_url && movie.trailer_url.includes('youtube.com/watch')) {
+      const videoId = movie.trailer_url.split('v=')[1]?.split('&')[0]
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`
+      }
+    }
+    
+    // Fallback placeholder
+    return "https://www.youtube.com/embed/dQw4w9WgXcQ"
   }
 
   if (loading) {
@@ -124,9 +135,14 @@ export default function MovieDetails() {
                     {movie.runtime}
                   </span>
                 )}
-                {movie.imdb_rating && movie.imdb_rating !== 'N/A' && (
+                {movie.rating && movie.rating !== 'N/A' && (
                   <span className="bg-yellow-200 text-yellow-800 px-3 py-1 rounded">
-                    ⭐ {movie.imdb_rating}/10
+                    ⭐ {movie.rating}/10
+                  </span>
+                )}
+                {movie.mpaa_rating && (
+                  <span className="bg-red-200 text-red-800 px-3 py-1 rounded">
+                    {movie.mpaa_rating}
                   </span>
                 )}
               </div>
@@ -176,20 +192,19 @@ export default function MovieDetails() {
               </div>
 
               {/* Trailer Section */}
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-700 mb-3">Trailer:</h3>
-                <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                  <iframe
-                    src={getEmbedTrailerUrl()}
-                    title={`${movie.title} Trailer`}
-                    className="w-full h-full"
-                    allowFullScreen
-                  />
+              {movie.trailer_url && (
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-700 mb-3">Trailer:</h3>
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <iframe
+                      src={getEmbedTrailerUrl()}
+                      title={`${movie.title} Trailer`}
+                      className="w-full h-full"
+                      allowFullScreen
+                    />
+                  </div>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  Note: This is a demo trailer. In production, actual movie trailers would be displayed.
-                </p>
-              </div>
+              )}
             </div>
           </div>
         </div>

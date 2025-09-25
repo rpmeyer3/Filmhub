@@ -43,15 +43,15 @@ class ApiService {
     return this.request('/favorites/');
   }
 
-  async toggleFavorite(imdbId) {
-    return this.request(`/favorites/${imdbId}/`, {
+  async toggleFavorite(movieId) {
+    return this.request(`/favorites/${movieId}/`, {
       method: 'POST',
     });
   }
 
   // Reviews (for future use)
-  async getMovieReviews(imdbId) {
-    return this.request(`/reviews/${imdbId}/`);
+  async getMovieReviews(movieId) {
+    return this.request(`/reviews/${movieId}/`);
   }
 }
 

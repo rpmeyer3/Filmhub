@@ -10,15 +10,15 @@ export default function BookingPage() {
   const [bookingInfo, setBookingInfo] = useState({
     movie: '',
     showtime: '',
-    imdbId: ''
+    movieId: ''
   })
 
   useEffect(() => {
     const movie = searchParams.get('movie') || ''
     const showtime = searchParams.get('showtime') || ''
-    const imdbId = searchParams.get('imdbId') || ''
+    const movieId = searchParams.get('movieId') || ''
     
-    setBookingInfo({ movie, showtime, imdbId })
+    setBookingInfo({ movie, showtime, movieId })
   }, [searchParams])
 
   return (

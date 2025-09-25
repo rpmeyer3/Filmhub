@@ -7,14 +7,14 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
   const handleShowtimeClick = (showtime, e) => {
     e.preventDefault();
     // Navigate to booking page with movie and showtime
-    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&imdbId=${movie.imdb_id}&showtime=${encodeURIComponent(showtime)}`;
+    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&movieId=${movie.id}&showtime=${encodeURIComponent(showtime)}`;
   };
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       {/* Movie Poster */}
       <div className="relative h-96">
-        <Link href={`/movie/${movie.imdb_id}`}>
+        <Link href={`/movie/${movie.id}`}>
           {movie.poster_url && movie.poster_url !== 'N/A' ? (
             <Image
               src={movie.poster_url}
@@ -33,7 +33,7 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
 
       {/* Movie Info */}
       <div className="p-4">
-        <Link href={`/movie/${movie.imdb_id}`}>
+        <Link href={`/movie/${movie.id}`}>
           <h3 className="font-bold text-lg mb-2 hover:text-red-600 cursor-pointer line-clamp-2">
             {movie.title}
           </h3>
@@ -43,9 +43,9 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
           <span className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded mr-2">
             {movie.year}
           </span>
-          {movie.imdb_rating && movie.imdb_rating !== 'N/A' && (
+          {movie.rating && movie.rating !== 'N/A' && (
             <span className="text-yellow-500 text-sm">
-              ⭐ {movie.imdb_rating}
+              ⭐ {movie.rating}
             </span>
           )}
         </div>

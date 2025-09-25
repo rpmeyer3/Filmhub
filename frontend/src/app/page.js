@@ -22,10 +22,9 @@ export default function Home() {
       setLoading(true)
       const response = await ApiService.getMovies()
       
-      // Handle the Supabase Movies table data - simplified structure from Movies table only
+      // Handle the Supabase Movies table data - using only database IDs
       const movieData = response.movies ? response.movies.map(movie => ({
         id: movie.id,
-        imdb_id: movie.id.toString(), // Use database id as imdb_id for compatibility
         title: movie.title,
         year: '2024', // Default year since not in current data
         plot: movie.synopsis,
@@ -35,7 +34,7 @@ export default function Home() {
         actors: movie.cast || 'Cast TBD',
         producers: movie.producer || 'Producers TBD',
         runtime: '120 min', // Default runtime
-        imdb_rating: movie.rating?.toString() || '0',
+        rating: movie.rating?.toString() || '0',
         trailer_url: movie.trailer_url,
         trailer_pic: movie.trailer_pic_url,
         mpaa_rating: movie.mpaa_rating,
@@ -125,10 +124,10 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            Cinema E-Booking System
+            Film-Hub
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover and book your favorite movies. Experience cinema like never before.
+            Book your favorite movies with us!
           </p>
         </div>
 
@@ -145,7 +144,7 @@ export default function Home() {
           {currentlyRunning.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {currentlyRunning.map((movie) => (
-                <MovieCard key={movie.imdb_id} movie={movie} />
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </div>
           ) : (
@@ -161,7 +160,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Coming Soon</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {comingSoon.map((movie) => (
-                <MovieCard key={movie.imdb_id} movie={movie} />
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </div>
           </section>
