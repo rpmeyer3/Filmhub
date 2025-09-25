@@ -4,9 +4,6 @@ FROM python:3.11-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y postgresql-client
-
 # Install Python dependencies from requirements.txt
 COPY requirements.txt .
 RUN pip install -r requirements.txt
