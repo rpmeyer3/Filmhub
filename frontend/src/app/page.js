@@ -46,61 +46,10 @@ export default function Home() {
       setMovies(movieData)
       setFilteredMovies(movieData)
     } catch (err) {
-      // Fallback to demo data when backend is not available
-      console.log('Backend not available, using demo data:', err)
-      const demoMovies = [
-        {
-          imdb_id: 'tt0133093',
-          title: 'The Matrix',
-          year: '1999',
-          plot: 'A computer programmer is led to fight an underground war against powerful computers who have constructed his entire reality with a system called the Matrix.',
-          poster_url: 'https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg',
-          genre: 'Action, Sci-Fi',
-          director: 'Lana Wachowski, Lilly Wachowski',
-          actors: 'Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss',
-          runtime: '136 min',
-          imdb_rating: '8.7'
-        },
-        {
-          imdb_id: 'tt1375666',
-          title: 'Inception',
-          year: '2010',
-          plot: 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.',
-          poster_url: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
-          genre: 'Action, Drama, Sci-Fi',
-          director: 'Christopher Nolan',
-          actors: 'Leonardo DiCaprio, Marion Cotillard, Ellen Page',
-          runtime: '148 min',
-          imdb_rating: '8.8'
-        },
-        {
-          imdb_id: 'tt4154796',
-          title: 'Avengers: Endgame',
-          year: '2019',
-          plot: 'After the devastating events of Avengers: Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more to reverse Thanos\' actions.',
-          poster_url: 'https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_SX300.jpg',
-          genre: 'Action, Adventure, Drama',
-          director: 'Anthony Russo, Joe Russo',
-          actors: 'Robert Downey Jr., Chris Evans, Mark Ruffalo',
-          runtime: '181 min',
-          imdb_rating: '8.4'
-        },
-        {
-          imdb_id: 'tt15398776',
-          title: 'Oppenheimer',
-          year: '2023',
-          plot: 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.',
-          poster_url: 'https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_SX300.jpg',
-          genre: 'Biography, Drama, History',
-          director: 'Christopher Nolan',
-          actors: 'Cillian Murphy, Emily Blunt, Robert Downey Jr.',
-          runtime: '180 min',
-          imdb_rating: '8.4'
-        }
-      ]
-      setMovies(demoMovies)
-      setFilteredMovies(demoMovies)
-      setError(null) // Clear error since we have demo data
+      console.error('Failed to fetch movies:', err)
+      setError('Failed to load movies. Please check your connection and try again.')
+      setMovies([])
+      setFilteredMovies([])
     } finally {
       setLoading(false)
     }
@@ -115,14 +64,15 @@ export default function Home() {
     try {
       setLoading(true)
       const searchResults = await ApiService.searchMovies(searchTerm)
-      setFilteredMovies(searchResults)
+      if (searchResults && searchResults.results) {
+        setFilteredMovies(searchResults.results)
+      } else {
+        setFilteredMovies([])
+      }
     } catch (err) {
       console.error('Search error:', err)
-      // Fallback to local filtering
-      const localResults = movies.filter(movie =>
-        movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredMovies(localResults)
+      setError('Search failed. Please try again.')
+      setFilteredMovies([])
     } finally {
       setLoading(false)
     }
