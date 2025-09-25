@@ -1,18 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: movie_booking_db
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=movie_booking
-      - POSTGRES_USER=will
-      - POSTGRES_PASSWORD=your_secure_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   backend:
     build: ./Backend
     container_name: movie_booking_backend
@@ -23,8 +11,8 @@ services:
       - "8000:8000"
     env_file:
       - ./Backend/.env
-    depends_on:
-      - db
+    environment:
+      - PYTHONUNBUFFERED=1
 
   frontend:
     build: ./frontend
@@ -37,6 +25,5 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-
-volumes:
-  postgres_data:
+    environment:
+      - WATCHPACK_POLLING=true
