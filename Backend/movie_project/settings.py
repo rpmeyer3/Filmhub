@@ -129,6 +129,6 @@ EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = os.getenv('FROM_EMAIL', 'noreply@movieapp.com')
 
-# OMDB API settings
-OMDB_API_KEY = os.getenv('OMDB_API_KEY')
-OMDB_BASE_URL = os.getenv('OMDB_BASE_URL', 'http://www.omdbapi.com/')
+# OMDB API settings (deprecated - now using only Supabase Movies table)
+# OMDB_API_KEY = os.getenv('OMDB_API_KEY')
+# OMDB_BASE_URL = os.getenv('OMDB_BASE_URL', 'http://www.omdbapi.com/')

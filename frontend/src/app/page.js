@@ -22,30 +22,25 @@ export default function Home() {
       setLoading(true)
       const response = await ApiService.getMovies()
       
-      // Handle the new comprehensive Supabase API response format with all relationships
+      // Handle the Supabase Movies table data - simplified structure from Movies table only
       const movieData = response.movies ? response.movies.map(movie => ({
         id: movie.id,
-        imdb_id: movie.id.toString(), // Use database id as imdb_id for now
+        imdb_id: movie.id.toString(), // Use database id as imdb_id for compatibility
         title: movie.title,
         year: '2024', // Default year since not in current data
         plot: movie.synopsis,
         poster_url: movie.poster_url,
-        genre: movie.categories ? movie.categories.join(', ') : movie.mpaa_rating, // Use categories as genres
-        director: movie.directors ? movie.directors.join(', ') : 'Director TBD',
-        actors: movie.cast ? movie.cast.join(', ') : 'Cast TBD',
-        producers: movie.producers ? movie.producers.join(', ') : 'Producers TBD',
+        genre: movie.category ? movie.category.join(', ') : movie.mpaa_rating, // Use category array as genres
+        director: movie.director || 'Director TBD',
+        actors: movie.cast || 'Cast TBD',
+        producers: movie.producer || 'Producers TBD',
         runtime: '120 min', // Default runtime
         imdb_rating: movie.rating?.toString() || '0',
         trailer_url: movie.trailer_url,
         trailer_pic: movie.trailer_pic_url,
         mpaa_rating: movie.mpaa_rating,
         is_running: movie.is_running,
-        is_coming_soon: movie.is_coming_soon,
-        // Additional data for richer display
-        categories: movie.categories || [],
-        cast: movie.cast || [],
-        directors: movie.directors || [],
-        producers: movie.producers || []
+        is_coming_soon: movie.is_coming_soon
       })) : []
       
       setMovies(movieData)

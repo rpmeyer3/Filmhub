@@ -30,8 +30,8 @@ class ApiService {
     return this.request('/movies/');
   }
 
-  async getMovie(imdbId) {
-    return this.request(`/movies/${imdbId}/`);
+  async getMovie(movieId) {
+    return this.request(`/movies/${movieId}/`);
   }
 
   async searchMovies(query) {

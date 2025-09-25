@@ -2,48 +2,192 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
+from django.db import connection
 from .models import Movie, UserFavorite, MovieReview
 from .serializers import MovieSerializer, UserFavoriteSerializer, MovieReviewSerializer
-from .services import OMDBService
 from django.conf import settings
 
 
-class MovieListView(generics.ListAPIView):
-    """List all movies in the database"""
-    queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+class MovieListView(APIView):
+    """List all movies from Supabase Movies table only"""
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                # Query movies from Supabase Movies table
+                cursor.execute('''
+                    SELECT 
+                        id,
+                        "Title" as title,
+                        "Synopsis" as synopsis, 
+                        "Reviews" as rating,
+                        "Poster_img_URL" as poster_url,
+                        "TrailerURL" as trailer_url,
+                        "TrailerPicLink" as trailer_pic_url,
+                        "MPAA_US_Film_Rating" as mpaa_rating,
+                        "isRunning" as is_running,
+                        "isComingSoon" as is_coming_soon,
+                        "Director" as director,
+                        "Producer" as producer,
+                        "Cast" as cast,
+                        "Category" as category
+                    FROM "Movies"
+                    ORDER BY id;
+                ''')
+                
+                rows = cursor.fetchall()
+                movies = []
+                
+                for row in rows:
+                    movie = {
+                        'id': row[0],
+                        'title': row[1],
+                        'synopsis': row[2],
+                        'rating': row[3],
+                        'poster_url': row[4],
+                        'trailer_url': row[5],
+                        'trailer_pic_url': row[6],
+                        'mpaa_rating': row[7],
+                        'is_running': row[8],
+                        'is_coming_soon': row[9],
+                        'director': row[10],
+                        'producer': row[11],
+                        'cast': row[12],
+                        'category': row[13]
+                    }
+                    movies.append(movie)
+                
+                return Response({
+                    'success': True,
+                    'movies': movies,
+                    'count': len(movies)
+                })
+                
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch movies: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class MovieDetailView(APIView):
-    """Get movie details by IMDB ID"""
-    def get(self, request, imdb_id):
+    """Get movie details by movie ID from Supabase Movies table only"""
+    def get(self, request, movie_id):
         try:
-            # Try to get movie from database first
-            movie = Movie.objects.get(imdb_id=imdb_id)
-            serializer = MovieSerializer(movie)
-            return Response(serializer.data)
-        except Movie.DoesNotExist:
-            # If not in database, fetch from OMDB API
-            omdb_service = OMDBService()
-            movie_data = omdb_service.get_movie_by_id(imdb_id)
-            if movie_data:
-                # Save to database
-                movie = Movie.objects.create(**movie_data)
-                serializer = MovieSerializer(movie)
-                return Response(serializer.data)
-            else:
-                return Response(
-                    {'error': 'Movie not found'}, 
-                    status=status.HTTP_404_NOT_FOUND
-                )
+            with connection.cursor() as cursor:
+                # Query single movie from Supabase Movies table
+                cursor.execute('''
+                    SELECT 
+                        id,
+                        "Title" as title,
+                        "Synopsis" as synopsis, 
+                        "Reviews" as rating,
+                        "Poster_img_URL" as poster_url,
+                        "TrailerURL" as trailer_url,
+                        "TrailerPicLink" as trailer_pic_url,
+                        "MPAA_US_Film_Rating" as mpaa_rating,
+                        "isRunning" as is_running,
+                        "isComingSoon" as is_coming_soon,
+                        "Director" as director,
+                        "Producer" as producer,
+                        "Cast" as cast,
+                        "Category" as category
+                    FROM "Movies"
+                    WHERE id = %s;
+                ''', [movie_id])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Movie not found'}, 
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                movie = {
+                    'id': row[0],
+                    'title': row[1],
+                    'synopsis': row[2],
+                    'rating': row[3],
+                    'poster_url': row[4],
+                    'trailer_url': row[5],
+                    'trailer_pic_url': row[6],
+                    'mpaa_rating': row[7],
+                    'is_running': row[8],
+                    'is_coming_soon': row[9],
+                    'director': row[10],
+                    'producer': row[11],
+                    'cast': row[12],
+                    'category': row[13]
+                }
+                
+                return Response(movie)
+                
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch movie: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class MovieSearchView(APIView):
-    """Search for movies using OMDB API"""
+    """Search for movies in Supabase Movies table only"""
     def get(self, request, query):
-        omdb_service = OMDBService()
-        results = omdb_service.search_movies(query)
-        return Response(results)
+        try:
+            with connection.cursor() as cursor:
+                # Search movies in Supabase Movies table by title
+                search_query = f'%{query}%'
+                cursor.execute('''
+                    SELECT 
+                        id,
+                        "Title" as title,
+                        "Synopsis" as synopsis, 
+                        "Reviews" as rating,
+                        "Poster_img_URL" as poster_url,
+                        "TrailerURL" as trailer_url,
+                        "TrailerPicLink" as trailer_pic_url,
+                        "MPAA_US_Film_Rating" as mpaa_rating,
+                        "isRunning" as is_running,
+                        "isComingSoon" as is_coming_soon,
+                        "Director" as director,
+                        "Producer" as producer,
+                        "Cast" as cast,
+                        "Category" as category
+                    FROM "Movies"
+                    WHERE "Title" ILIKE %s
+                    ORDER BY "Title";
+                ''', [search_query])
+                
+                rows = cursor.fetchall()
+                movies = []
+                
+                for row in rows:
+                    movie = {
+                        'id': row[0],
+                        'title': row[1],
+                        'synopsis': row[2],
+                        'rating': row[3],
+                        'poster_url': row[4],
+                        'trailer_url': row[5],
+                        'trailer_pic_url': row[6],
+                        'mpaa_rating': row[7],
+                        'is_running': row[8],
+                        'is_coming_soon': row[9],
+                        'director': row[10],
+                        'producer': row[11],
+                        'cast': row[12],
+                        'category': row[13]
+                    }
+                    movies.append(movie)
+                
+                return Response({
+                    'results': movies,
+                    'total_results': len(movies)
+                })
+                
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to search movies: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserFavoritesView(generics.ListAPIView):
@@ -56,34 +200,12 @@ class UserFavoritesView(generics.ListAPIView):
 
 
 class ToggleFavoriteView(APIView):
-    """Add/remove movie from favorites"""
-    def post(self, request, imdb_id):
-        # For now, use a default user (add authentication later)
-        user = User.objects.first()
-        if not user:
-            return Response(
-                {'error': 'No user found'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        try:
-            movie = Movie.objects.get(imdb_id=imdb_id)
-        except Movie.DoesNotExist:
-            return Response(
-                {'error': 'Movie not found'}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        favorite, created = UserFavorite.objects.get_or_create(
-            user=user, movie=movie
+    """Add/remove movie from favorites - currently disabled as it requires Django Movie model"""
+    def post(self, request, movie_id):
+        return Response(
+            {'error': 'Favorites functionality requires Django Movie model integration'}, 
+            status=status.HTTP_501_NOT_IMPLEMENTED
         )
-        
-        if not created:
-            # If favorite already exists, remove it
-            favorite.delete()
-            return Response({'status': 'removed'})
-        else:
-            return Response({'status': 'added'})
 
 
 class ReviewListView(generics.ListCreateAPIView):
@@ -92,14 +214,10 @@ class ReviewListView(generics.ListCreateAPIView):
     serializer_class = MovieReviewSerializer
 
 
-class MovieReviewsView(generics.ListAPIView):
-    """Get all reviews for a specific movie"""
-    serializer_class = MovieReviewSerializer
-    
-    def get_queryset(self):
-        imdb_id = self.kwargs['imdb_id']
-        try:
-            movie = Movie.objects.get(imdb_id=imdb_id)
-            return MovieReview.objects.filter(movie=movie)
-        except Movie.DoesNotExist:
-            return MovieReview.objects.none()
+class MovieReviewsView(APIView):
+    """Get all reviews for a specific movie - currently disabled as it requires Django Movie model"""
+    def get(self, request, movie_id):
+        return Response(
+            {'error': 'Movie reviews functionality requires Django Movie model integration'}, 
+            status=status.HTTP_501_NOT_IMPLEMENTED
+        )

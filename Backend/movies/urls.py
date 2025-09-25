@@ -8,21 +8,21 @@ urlpatterns = [
     # Health check
     path('health/', HealthCheckView.as_view(), name='health-check'),
     
-    # Supabase Movie endpoints with full relationships
-    path('movies/', SupabaseMoviesView.as_view(), name='supabase-movies'),  # All movies with relationships
-    path('movies/<int:movie_id>/', SupabaseMovieDetailView.as_view(), name='supabase-movie-detail'),  # Single movie detail
+    # Main movie endpoints - now using only Supabase Movies table
+    path('movies/', views.MovieListView.as_view(), name='movie-list'),  # All movies from Supabase only
+    path('movies/<int:movie_id>/', views.MovieDetailView.as_view(), name='movie-detail'),  # Single movie detail
+    path('movies/search/<str:query>/', views.MovieSearchView.as_view(), name='movie-search'),  # Search in Supabase only
+    
+    # Alternative endpoints with full relationships (legacy)
+    path('movies/detailed/', SupabaseMoviesView.as_view(), name='supabase-movies-detailed'),  # Movies with relationships
+    path('movies/detailed/<int:movie_id>/', SupabaseMovieDetailView.as_view(), name='supabase-movie-detail-full'),  # Single movie with relationships
     path('stats/', SupabaseStatsView.as_view(), name='supabase-stats'),  # Database statistics
     
-    # Original Django model endpoints
-    path('movies/django/', views.MovieListView.as_view(), name='movie-list'),  # Original Django models
-    path('movies/django/<str:imdb_id>/', views.MovieDetailView.as_view(), name='movie-detail'),
-    path('movies/search/<str:query>/', views.MovieSearchView.as_view(), name='movie-search'),
-    
-    # User favorites
+    # User favorites (currently disabled)
     path('favorites/', views.UserFavoritesView.as_view(), name='user-favorites'),
-    path('favorites/<str:imdb_id>/', views.ToggleFavoriteView.as_view(), name='toggle-favorite'),
+    path('favorites/<int:movie_id>/', views.ToggleFavoriteView.as_view(), name='toggle-favorite'),
     
-    # Reviews
+    # Reviews (currently disabled)
     path('reviews/', views.ReviewListView.as_view(), name='review-list'),
-    path('reviews/<str:imdb_id>/', views.MovieReviewsView.as_view(), name='movie-reviews'),
+    path('reviews/<int:movie_id>/', views.MovieReviewsView.as_view(), name='movie-reviews'),
 ]
