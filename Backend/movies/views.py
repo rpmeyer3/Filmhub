@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Movie, UserFavorite, MovieReview
 from .serializers import MovieSerializer, UserFavoriteSerializer, MovieReviewSerializer
 from .services import OMDBService
+from django.conf import settings
 
 
 class MovieListView(generics.ListAPIView):
