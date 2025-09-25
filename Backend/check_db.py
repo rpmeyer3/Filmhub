@@ -22,7 +22,7 @@ def check_database_connection():
             # Test basic connection
             cursor.execute("SELECT version();")
             version = cursor.fetchone()
-            print(f"Database connection successful!")
+            print(f"SUCCESS: Database connection successful!")
             print(f"PostgreSQL version: {version[0]}")
             
             # List all tables
@@ -34,19 +34,19 @@ def check_database_connection():
             """)
             tables = cursor.fetchall()
             
-            print(f"\n Found {len(tables)} tables in database:")
+            print(f"\nFound {len(tables)} tables in database:")
             for table in tables:
                 cursor.execute(f"SELECT COUNT(*) FROM {table[0]};")
                 count = cursor.fetchone()[0]
                 print(f"  - {table[0]}: {count} records")
                 
     except Exception as e:
-        print(f"Database connection failed: {e}")
+        print(f"ERROR: Database connection failed: {e}")
         return False
     
     return True
 
 if __name__ == "__main__":
-    print("🔍 Checking Supabase database connection...")
+    print("Checking Supabase database connection...")
     success = check_database_connection()
     sys.exit(0 if success else 1)

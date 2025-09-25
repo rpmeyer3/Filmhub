@@ -45,7 +45,7 @@ def show_table_data(table_name, limit=None):
                             print(f"  {columns[i]}: {value}")
                     print("-" * 40)
             else:
-                print(f"\n📋 {table_name.upper()}: No data found")
+                print(f"\n{table_name.upper()}: No data found")
                 
     except Exception as e:
         print(f" Error reading {table_name}: {e}")
