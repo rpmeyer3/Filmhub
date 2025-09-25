@@ -36,9 +36,14 @@ def check_database_connection():
             
             print(f"\nFound {len(tables)} tables in database:")
             for table in tables:
-                cursor.execute(f"SELECT COUNT(*) FROM {table[0]};")
-                count = cursor.fetchone()[0]
-                print(f"  - {table[0]}: {count} records")
+                # Properly quote table names to handle special characters
+                table_name = table[0]
+                try:
+                    cursor.execute(f'SELECT COUNT(*) FROM "{table_name}";')
+                    count = cursor.fetchone()[0]
+                    print(f"  - {table_name}: {count} records")
+                except Exception as e:
+                    print(f"  - {table_name}: Error counting records - {e}")
                 
     except Exception as e:
         print(f"ERROR: Database connection failed: {e}")
