@@ -34,27 +34,12 @@ class MovieListView(APIView):
                     ORDER BY id;
                 ''')
                 
-                rows = cursor.fetchall()
-                movies = []
-                
-                for row in rows:
-                    movie = {
-                        'id': row[0],
-                        'title': row[1],
-                        'synopsis': row[2],
-                        'rating': row[3],
-                        'poster_url': row[4],
-                        'trailer_url': row[5],
-                        'trailer_pic_url': row[6],
-                        'mpaa_rating': row[7],
-                        'is_running': row[8],
-                        'is_coming_soon': row[9],
-                        'director': row[10],
-                        'producer': row[11],
-                        'cast': row[12],
-                        'category': row[13]
-                    }
-                    movies.append(movie)
+                # Fetch column names from the cursor description
+                columns = [col[0] for col in cursor.description]
+                movies = [
+                    dict(zip(columns, row))
+                    for row in cursor.fetchall()
+                ]
                 
                 return Response({
                     'success': True,
