@@ -99,7 +99,7 @@ export default function Home() {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
-            <div className="text-xl">Loading movies...</div>
+            <div className="text-xl">Fetching Movies!</div>
           </div>
         </main>
       </div>
