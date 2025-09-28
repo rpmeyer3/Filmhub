@@ -15,7 +15,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-red-500 hover:text-red-400 transition-colors">
-              🎬 Cinema E-Booking
+              Cinema E-Booking Website Sprint 1
             </Link>
           </div>
 
@@ -105,7 +105,7 @@ export default function Header() {
               </a>
               <div className="border-t border-gray-700 mt-2 pt-2">
                 <button className="block w-full text-left px-4 py-3 hover:bg-gray-800 transition-colors">
-                  📍 Atlanta, GA
+                   Athens, GA
                 </button>
                 <button className="block w-full text-left px-4 py-3 bg-red-600 hover:bg-red-700 transition-colors">
                   Sign In
