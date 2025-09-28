@@ -86,7 +86,7 @@ export default function MovieDetails() {
           <div className="text-center">
             <div className="text-red-600 mb-4">{error || 'Movie not found'}</div>
             <Link href="/" className="text-blue-600 hover:text-blue-800">
-              ← Back to Home
+              Go Back to Home
             </Link>
           </div>
         </main>
