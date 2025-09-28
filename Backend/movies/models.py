@@ -11,7 +11,7 @@ class Movie(models.Model):
     reviews = models.TextField(blank=True, null=True, db_column= 'Reviews')
     trailer_url = models.URLField(blank=True, null=True, db_column='TrailerURL')
     trailer_pic_url = models.URLField(blank=True, null=True, db_column='TrailerPicLink')
-    mpaa_rating = models.CharField(max_length=10, db_column='MPAA_US_FILM_RATING')
+    mpaa_rating = models.CharField(blank=True, null=True, max_length=10, db_column='MPAA_US_FILM_RATING')
     is_running = models.BooleanField(default=False, db_column='isRunning')
     is_coming_soon = models.BooleanField(default=False, db_column='isComingSoon')
     director = models.TextField(blank=True, null=True, db_column='Director')
