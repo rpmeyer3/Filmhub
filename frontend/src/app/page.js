@@ -33,7 +33,7 @@ export default function Home() {
         director: movie.director || 'Director TBD',
         actors: movie.cast || 'Cast TBD',
         producers: movie.producer || 'Producers TBD',
-        runtime: '120 min', // Default runtime
+        runtime: '120 min', // Default running time for the movie
         rating: movie.rating?.toString() || '0',
         trailer_url: movie.trailer_url,
         trailer_pic: movie.trailer_pic_url,
