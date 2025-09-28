@@ -168,10 +168,10 @@ export default function MovieDetails() {
                 </div>
               )}
 
-              {movie.plot && movie.plot !== 'N/A' && (
+              {movie.synopsis && movie.synopsis !== 'N/A' && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-2">Synopsis:</h3>
-                  <p className="text-gray-600 leading-relaxed">{movie.plot}</p>
+                  <p className="text-gray-600 leading-relaxed">{movie.synopsis}</p>
                 </div>
               )}
 

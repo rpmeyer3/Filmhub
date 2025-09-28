@@ -29,7 +29,8 @@ class MovieListView(APIView):
                         "Director" as director,
                         "Producer" as producer,
                         "Cast" as cast,
-                        "Category" as category
+                        "Category" as category,
+                        "Year" as year
                     FROM "Movies"
                     ORDER BY id;
                 ''')
@@ -75,7 +76,8 @@ class MovieDetailView(APIView):
                         "Director" as director,
                         "Producer" as producer,
                         "Cast" as cast,
-                        "Category" as category
+                        "Category" as category,
+                        "Year" as year
                     FROM "Movies"
                     WHERE id = %s;
                 ''', [movie_id])
@@ -101,7 +103,8 @@ class MovieDetailView(APIView):
                     'director': row[10],
                     'producer': row[11],
                     'cast': row[12],
-                    'category': row[13]
+                    'category': row[13],
+                    'year':row[14]
                 }
                 
                 return Response(movie)
@@ -135,7 +138,8 @@ class MovieSearchView(APIView):
                         "Director" as director,
                         "Producer" as producer,
                         "Cast" as cast,
-                        "Category" as category
+                        "Category" as category,
+                        "Year" as year
                     FROM "Movies"
                     WHERE "Title" ILIKE %s
                     ORDER BY "Title";
