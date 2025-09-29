@@ -26,7 +26,7 @@ export default function Home() {
       const movieData = response.movies ? response.movies.map(movie => ({
         id: movie.id,
         title: movie.title,
-        year: '2024', // Default year since not in current data
+        year: movie.year || '2024', // Use actual year from database, fallback to 2024
         plot: movie.synopsis,
         poster_url: movie.poster_url,
         genre: movie.category ? movie.category.join(', ') : movie.mpaa_rating, // Use category array as genres

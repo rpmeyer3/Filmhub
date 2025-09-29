@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 class Movie(models.Model):
     id = models.AutoField(primary_key= True)
     title = models.TextField(db_column= 'Title')
+    year = models.CharField(max_length=4, blank=True, null=True, db_column='Year')
     synopsis = models.TextField(blank=True, null=True, db_column= 'Synopsis')
     reviews = models.TextField(blank=True, null=True, db_column= 'Reviews')
     trailer_url = models.URLField(blank=True, null=True, db_column='TrailerURL')
