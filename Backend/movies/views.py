@@ -9,7 +9,6 @@ from django.conf import settings
 
 
 class MovieListView(APIView):
-    """List all movies from Supabase Movies table only"""
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -56,7 +55,6 @@ class MovieListView(APIView):
 
 
 class MovieDetailView(APIView):
-    """Get movie details by movie ID from Supabase Movies table only"""
     def get(self, request, movie_id):
         try:
             with connection.cursor() as cursor:
@@ -117,7 +115,6 @@ class MovieDetailView(APIView):
 
 
 class MovieSearchView(APIView):
-    """Search for movies in Supabase Movies table only"""
     def get(self, request, query):
         try:
             with connection.cursor() as cursor:
@@ -180,7 +177,6 @@ class MovieSearchView(APIView):
 
 
 class UserFavoritesView(generics.ListAPIView):
-    """List user's favorite movies"""
     serializer_class = UserFavoriteSerializer
     
     def get_queryset(self):
@@ -189,7 +185,6 @@ class UserFavoritesView(generics.ListAPIView):
 
 
 class ToggleFavoriteView(APIView):
-    """Add/remove movie from favorites - currently disabled as it requires Django Movie model"""
     def post(self, request, movie_id):
         return Response(
             {'error': 'Favorites functionality requires Django Movie model integration'}, 
@@ -198,13 +193,11 @@ class ToggleFavoriteView(APIView):
 
 
 class ReviewListView(generics.ListCreateAPIView):
-    """List all reviews or create a new review"""
     queryset = MovieReview.objects.all()
     serializer_class = MovieReviewSerializer
 
 
 class MovieReviewsView(APIView):
-    """Get all reviews for a specific movie - currently disabled as it requires Django Movie model"""
     def get(self, request, movie_id):
         return Response(
             {'error': 'Movie reviews functionality requires Django Movie model integration'}, 
