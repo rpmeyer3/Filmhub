@@ -124,10 +124,10 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            Film-Hub
+            Cinema E-Booking Deliverable #3 
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Book your favorite movies with us!
+            Just showing that it works...
           </p>
         </div>
 
