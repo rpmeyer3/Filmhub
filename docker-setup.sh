@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Setting up Docker containers for Movie Booking App with Supabase..."
+echo "Setting up Docker containers for Film-Hub w/ Supabase..."
 
 # Check if .env file exists
 if [ ! -f "./Backend/.env" ]; then
@@ -11,15 +11,14 @@ if [ ! -f "./Backend/.env" ]; then
 fi
 
 # Build and start containers
-echo "🔨 Building Docker containers..."
+echo "Building Docker containers..."
 docker-compose build
 
-echo "🏃 Starting containers..."
+echo "Starting containers..."
 docker-compose up -d
 
 echo "✅ Containers started!"
 echo ""
-echo "📍 Your services are running at:"
 echo "   Frontend: http://localhost:3000"
 echo "   Backend:  http://localhost:8000"
 echo ""
