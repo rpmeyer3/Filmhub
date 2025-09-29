@@ -76,6 +76,9 @@ DATABASES = {
     }
 }
 
+# User Model
+#AUTH_USER_MODEL ="movies.CustomUser"
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
