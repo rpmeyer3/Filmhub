@@ -13,7 +13,7 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       {/* Movie Poster */}
-      <div className="relative h-96">
+      <div className="relative h-150">
         <Link href={`/movie/${movie.id}`}>
           {movie.poster_url && movie.poster_url !== 'N/A' ? (
             <Image
