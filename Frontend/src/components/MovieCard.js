@@ -59,21 +59,32 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
           </p>
         )}
 
-        {/* Showtimes */}
-        <div className="border-t pt-3">
-          <p className="text-sm font-semibold text-gray-800 mb-2">Showtimes:</p>
-          <div className="flex flex-wrap gap-2">
-            {showTimes.map((time) => (
-              <button
-                key={time}
-                onClick={(e) => handleShowtimeClick(time, e)}
-                className="bg-red-600 text-white text-xs px-3 py-1 rounded hover:bg-red-700 transition-colors"
-              >
-                {time}
-              </button>
-            ))}
+        {/* Showtimes only show for currently running movies */}
+        {movie.is_running && !movie.is_coming_soon && (
+          <div className="border-t pt-3">
+            <p className="text-sm font-semibold text-gray-800 mb-2">Showtimes:</p>
+            <div className="flex flex-wrap gap-2">
+              {showTimes.map((time) => (
+                <button
+                  key={time}
+                  onClick={(e) => handleShowtimeClick(time, e)}
+                  className="bg-red-600 text-white text-xs px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                >
+                  {time}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Coming Soon!!!!!!! */}
+        {movie.is_coming_soon && (
+          <div className="border-t pt-3">
+            <div className="bg-blue-100 text-blue-800 text-sm px-3 py-2 rounded text-center font-semibold">
+              Coming Soon
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
