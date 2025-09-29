@@ -178,21 +178,35 @@ export default function MovieDetails() {
                 </div>
               )}
 
-              {/* Showtimes */}
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-700 mb-3">Available Showtimes:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {showTimes.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => handleShowtimeClick(time)}
-                      className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                    >
-                      {time}
-                    </button>
-                  ))}
+              {/* Showtimes - Only show for currently running movies */}
+              {movie.is_running && !movie.is_coming_soon && (
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-700 mb-3">Available Showtimes:</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {showTimes.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => handleShowtimeClick(time)}
+                        className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Coming Soon indicator */}
+              {movie.is_coming_soon && (
+                <div className="mb-6">
+                  <div className="bg-blue-100 text-blue-800 text-lg px-6 py-4 rounded-lg text-center font-semibold">
+                    🎬 Coming Soon
+                  </div>
+                  <p className="text-gray-600 text-center mt-2">
+                    This movie will be available for booking soon!
+                  </p>
+                </div>
+              )}
 
               {/* Trailer Section */}
               {movie.trailer_url && (
