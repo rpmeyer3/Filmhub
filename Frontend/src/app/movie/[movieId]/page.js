@@ -71,7 +71,7 @@ export default function MovieDetails() {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
-            <div className="text-xl">Loading movie details...</div>
+            <div className="text-xl">Loading movies...</div>
           </div>
         </main>
       </div>

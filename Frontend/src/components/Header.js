@@ -15,11 +15,11 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-red-500 hover:text-red-400 transition-colors">
-              Cinema E-Booking Website Deliverable #3
+              Film-Hub
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation
           <div className="hidden lg:flex items-center space-x-8">
             <Link href="/" className="hover:text-red-400 transition-colors font-medium">
               Home
@@ -27,13 +27,9 @@ export default function Header() {
             <a href="#movies" className="hover:text-red-400 transition-colors font-medium">
               Movies
             </a>
-            <a href="#about" className="hover:text-red-400 transition-colors font-medium">
-              About
-            </a>
-            <a href="#contact" className="hover:text-red-400 transition-colors font-medium">
-              Contact
-            </a>
           </div>
+            */
+          }
 
           {/* Search and User Actions */}
           <div className="flex items-center space-x-4">
