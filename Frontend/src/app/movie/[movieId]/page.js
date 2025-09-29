@@ -136,8 +136,11 @@ export default function MovieDetails() {
                   </span>
                 )}
                 {movie.rating && movie.rating !== 'N/A' && (
-                  <span className="bg-yellow-200 text-yellow-800 px-3 py-1 rounded">
-                    ⭐ {movie.rating}/10
+                  <span className="bg-yellow-200 text-yellow-800 px-3 py-1 rounded flex items-center gap-1">
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    {movie.rating}/10
                   </span>
                 )}
                 {movie.mpaa_rating && (

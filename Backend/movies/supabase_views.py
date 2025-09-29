@@ -4,9 +4,6 @@ from rest_framework import status
 from django.db import connection
 
 class SupabaseMoviesView(APIView):
-    """
-    API View to get movies with all related data from Supabase
-    """
     
     def get(self, request):
         try:
@@ -107,9 +104,6 @@ class SupabaseMoviesView(APIView):
 
 
 class SupabaseMovieDetailView(APIView):
-    """
-    API View to get detailed information about a specific movie
-    """
     
     def get(self, request, movie_id):
         try:
@@ -199,9 +193,6 @@ class SupabaseMovieDetailView(APIView):
 
 
 class SupabaseStatsView(APIView):
-    """
-    API View to get database statistics and available data
-    """
     
     def get(self, request):
         try:
