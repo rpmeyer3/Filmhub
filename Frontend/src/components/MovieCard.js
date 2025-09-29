@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-export default function MovieCard({ movie, showTimes = ['1:00 PM', '4:00 PM', '7:00 PM'] }) {
+export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8:00 PM'] }) {
   const handleShowtimeClick = (showtime, e) => {
     e.preventDefault();
     // Navigate to booking page with movie and showtime
