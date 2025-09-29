@@ -13,14 +13,14 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       {/* Movie Poster */}
-      <div className="relative h-150">
+      <div className="relative aspect-[2/3] bg-gray-100">
         <Link href={`/movie/${movie.id}`}>
           {movie.poster_url && movie.poster_url !== 'N/A' ? (
             <Image
               src={movie.poster_url}
               alt={movie.title}
               fill
-              className="object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+              className="object-contain cursor-pointer hover:scale-102 transition-transform duration-300"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
