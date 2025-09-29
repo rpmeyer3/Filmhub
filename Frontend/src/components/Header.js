@@ -15,7 +15,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-red-500 hover:text-red-400 transition-colors">
-              Cinema E-Booking Website Sprint 1
+              Cinema E-Booking Website Deliverable #3
             </Link>
           </div>
 
