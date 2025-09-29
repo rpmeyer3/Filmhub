@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import MovieCard from '../components/MovieCard'
 import SearchFilter from '../components/SearchFilter'
+import Footer from '../components/Footer'
 import ApiService from '../services/api'
 
 export default function Home() {
@@ -175,6 +176,7 @@ export default function Home() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }
