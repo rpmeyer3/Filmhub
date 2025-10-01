@@ -119,7 +119,7 @@ classDiagram
     Movie "1" -- "1..*" Show : shows
     
     %% Associations for Booking/Ticket/Promotion
-    Booking "1" *-- "1..*" Ticket : contains
     Booking "1" -- "0..1" Promotion : applies
+    Booking "1" *-- "1..*" Ticket : contains
     Show "1" -- "*" Ticket : generates
     Ticket -- TicketType : type
