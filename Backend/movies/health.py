@@ -6,7 +6,6 @@ from movies.models import Movie
 
 
 class HealthCheckView(APIView):
-    """Health check endpoint to verify database connectivity"""
     
     def get(self, request):
         try:

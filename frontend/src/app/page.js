@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import MovieCard from '../components/MovieCard'
 import SearchFilter from '../components/SearchFilter'
+import Footer from '../components/Footer'
 import ApiService from '../services/api'
 
 export default function Home() {
@@ -26,14 +27,14 @@ export default function Home() {
       const movieData = response.movies ? response.movies.map(movie => ({
         id: movie.id,
         title: movie.title,
-        year: '2024', // Default year since not in current data
+        year: movie.year || '2024', // Use actual year from database, fallback to 2024
         plot: movie.synopsis,
         poster_url: movie.poster_url,
         genre: movie.category ? movie.category.join(', ') : movie.mpaa_rating, // Use category array as genres
         director: movie.director || 'Director TBD',
         actors: movie.cast || 'Cast TBD',
         producers: movie.producer || 'Producers TBD',
-        runtime: '120 min', // Default runtime
+        runtime: '120 min', // Default running time for the movie
         rating: movie.rating?.toString() || '0',
         trailer_url: movie.trailer_url,
         trailer_pic: movie.trailer_pic_url,
@@ -99,7 +100,7 @@ export default function Home() {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
-            <div className="text-xl">Loading movies...</div>
+            <div className="text-xl">Fetching Movies!</div>
           </div>
         </main>
       </div>
@@ -124,10 +125,10 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            Film-Hub
+            Cinema E-Booking Deliverable #3 
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Book your favorite movies with us!
+            Just showing that it works...
           </p>
         </div>
 
@@ -141,6 +142,8 @@ export default function Home() {
         {/* Currently Running Movies */}
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Currently Running</h2>
+          <hr className="border-gray-300 my-8" />
+          
           {currentlyRunning.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {currentlyRunning.map((movie) => (
@@ -158,6 +161,7 @@ export default function Home() {
         {comingSoon.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Coming Soon</h2>
+            <hr className="border-gray-300 my-8" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {comingSoon.map((movie) => (
                 <MovieCard key={movie.id} movie={movie} />
@@ -172,6 +176,7 @@ export default function Home() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }

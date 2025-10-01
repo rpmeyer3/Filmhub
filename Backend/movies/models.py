@@ -7,10 +7,10 @@ import uuid
 
 
 class Movie(models.Model):
-    """Model for storing movie information from OMDB API"""
     id = models.AutoField(primary_key= True)
     title = models.TextField(db_column= 'Title')
-    synopsis = models.TextField(db_column= 'Synopsis')
+    year = models.CharField(max_length=4, blank=True, null=True, db_column='Year')
+    synopsis = models.TextField(blank=True, null=True, db_column= 'Synopsis')
     reviews = models.TextField(blank=True, null=True, db_column= 'Reviews')
     trailer_url = models.URLField(blank=True, null=True, db_column='TrailerURL')
     trailer_pic_url = models.URLField(blank=True, null=True, db_column='TrailerPicLink')
@@ -24,21 +24,10 @@ class Movie(models.Model):
     poster_url = models.URLField(blank=True, null=True, db_column='Poster_img_URL')
 
 
-"""
-Can implement ordering and __str__ later if needed
-
-    def __str__(self):
-        return f"{self.title} ({self.year})"
-
-    class Meta:
-        ordering = ['-created_at']
-"""
-# Models for User favorites, reviews, 
 class UserFavorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
-    movie_id = models.IntegerField()  # ID from Supabase Movies table
-
-    added_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'movie_id')
@@ -50,7 +39,7 @@ class UserFavorite(models.Model):
 # Model for storing user reviews of movies
 class MovieReview(models.Model):
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
     review_text = models.TextField(blank=True)

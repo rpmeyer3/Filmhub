@@ -15,11 +15,11 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-red-500 hover:text-red-400 transition-colors">
-              🎬 Cinema E-Booking
+              Film-Hub
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation
           <div className="hidden lg:flex items-center space-x-8">
             <Link href="/" className="hover:text-red-400 transition-colors font-medium">
               Home
@@ -27,13 +27,9 @@ export default function Header() {
             <a href="#movies" className="hover:text-red-400 transition-colors font-medium">
               Movies
             </a>
-            <a href="#about" className="hover:text-red-400 transition-colors font-medium">
-              About
-            </a>
-            <a href="#contact" className="hover:text-red-400 transition-colors font-medium">
-              Contact
-            </a>
           </div>
+            */
+          }
 
           {/* Search and User Actions */}
           <div className="flex items-center space-x-4">
@@ -64,7 +60,7 @@ export default function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span className="text-sm">Atlanta, GA</span>
+              <span className="text-sm">Athens, GA</span>
             </button>
 
             {/* Sign In */}
@@ -105,7 +101,7 @@ export default function Header() {
               </a>
               <div className="border-t border-gray-700 mt-2 pt-2">
                 <button className="block w-full text-left px-4 py-3 hover:bg-gray-800 transition-colors">
-                  📍 Atlanta, GA
+                   Athens, GA
                 </button>
                 <button className="block w-full text-left px-4 py-3 bg-red-600 hover:bg-red-700 transition-colors">
                   Sign In

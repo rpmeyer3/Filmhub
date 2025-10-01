@@ -3,14 +3,12 @@ from django.conf import settings
 
 
 class OMDBService:
-    """Service for interacting with OMDB API"""
     
     def __init__(self):
         self.api_key = settings.OMDB_API_KEY
         self.base_url = settings.OMDB_BASE_URL
     
     def get_movie_by_id(self, imdb_id):
-        """Get movie details by IMDB ID"""
         if not self.api_key:
             return None
             
@@ -32,7 +30,6 @@ class OMDBService:
             return None
     
     def search_movies(self, query, page=1):
-        """Search for movies by title"""
         if not self.api_key:
             return {'results': [], 'total_results': 0}
             
@@ -57,7 +54,6 @@ class OMDBService:
             return {'results': [], 'total_results': 0}
     
     def _format_movie_data(self, omdb_data):
-        """Format OMDB API response to match our model"""
         return {
             'title': omdb_data.get('Title', ''),
             'year': omdb_data.get('Year', ''),
