@@ -1,0 +1,125 @@
+classDiagram
+    %% --- Entity Classes ---
+    class User {
+        +userID
+        +password
+        +login()
+        +logout()
+    }
+
+    class Admin {
+        +manageMovies()
+        +manageUsers()
+        +managePromotions()
+        +manageTicketPrices()
+    }
+
+    class Customer {
+        +firstName
+        +lastName
+        +email
+        +makeBooking()
+        +managePaymentCards()
+    }
+
+    class PaymentCard {
+        +cardNumber
+        +billingAddress
+        +expirationDate
+        +saveCard()
+        +removeCard()
+    }
+
+    class Movie {
+        +movieID
+        +title
+        +genre
+        +duration
+        +getDetails()
+        +findShowtimes()
+    }
+
+    class Cinema {
+        +name
+        +location
+        +getShowrooms()
+        +getNowShowing()
+    }
+
+    class Showroom {
+        +showroomID
+        +capacity
+        +getSeats()
+        +scheduleShow()
+    }
+
+    class Show {
+        +showID
+        +dateAndTime
+        +duration
+        +checkAvailability()
+        +getShowInfo()
+    }
+
+    class Booking {
+        +bookingID
+        +bookingDate
+        +totalPrice
+        +addTicket()
+        +applyPromotion()
+    }
+
+    class Ticket {
+        +ticketID
+        +seatNumber
+        +price
+        +getTicketDetails()
+        +validateTicket()
+    }
+
+    class Promotion {
+        +promoCode
+        +discountPercentage
+        +expirationDate
+        +applyDiscount()
+        +validateCode()
+    }
+
+
+    %% --- Enumerations ---
+    class CustomerState {
+        <<enumeration>>
+        Active
+        Inactive
+        Suspended
+    }
+
+    class TicketType {
+        <<enumeration>>
+        Adult
+        Senior
+        Child
+    }
+
+
+    %% --- Relationships & Multiplicities ---
+    
+    %% Inheritance for User types
+    User <|-- Admin
+    User <|-- Customer
+
+    %% Associations for Customer
+    Customer "1" -- "0..3" PaymentCard : stores
+    Customer "1" -- "0..*" Booking : has
+    Customer "1" -- "1" CustomerState : state
+
+    %% Associations for Cinema/Show
+    Cinema "1" *-- "1..*" Showroom : contains
+    Showroom "1" -- "0..*" Show : schedules
+    Movie "1" -- "1..*" Show : shows
+    
+    %% Associations for Booking/Ticket/Promotion
+    Booking "1" *-- "1..*" Ticket : contains
+    Booking "1" -- "0..1" Promotion : applies
+    Show "1" -- "*" Ticket : generates
+    Ticket -- TicketType : type
