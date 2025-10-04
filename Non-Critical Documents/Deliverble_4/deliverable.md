@@ -12,8 +12,7 @@ case analysis. You may not be able to define the exact function signatures; we w
 functionalities during Object Design Phase.
 Your class diagram should, at least, model the following: -
 1- Users are of two types admins and customers.
-2- The system will store information about registered users (customers), including user ID,
-first name, last name, email and password. Optionally each user can store payment card
+2- The system will store information about registered users (customers), including user ID, first name, last name, email and password. Optionally each user can store payment card
 information.
 3- A customer has one of three states: Active, inactive, or suspended.
 4- System admins will be identified by their user id and password.
