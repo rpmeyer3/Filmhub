@@ -58,27 +58,12 @@ class MovieReview(models.Model):
 
  # Models for cinemas, showrooms,showtimes, seats, booking, users
 """
-# Model for Cinema
 
-class Cinema(models.Model):
-    name = models.CharField(max_length=50)
-    location = models.IntegerField(max_length=5) # Zip Code 
-
-
-    def get_show_rooms(self):
-        return MovieShow.objects.filter(cinema=self)
-
-    def get_now_showing(self):
-        shows = MovieShow.objects.filter(cinema=self, is_now_showing = True)
-        movies = [show.movie for show in shows]
-        return movies
     
 # Model for ShowRoom
 
 class ShowRoom(models.Model):
-    cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE)
     capacity = models.IntegerField()
-    room_number = models.IntegerField()
 
 
 # Model for Seats
@@ -97,13 +82,11 @@ class Seat(models.Model):
 
 class MovieShow(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE)
     showtime = models.DateTimeField()
     is_now_showing = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    auditorium = models.IntegerField()
-
+    showroom = models.ForeignKey(ShowRoom, on_delete = models.CASCADE)
 
     class Meta:
         ordering = ['-created_at']
@@ -176,6 +159,14 @@ class Customer(models.Model):
 
     phone_number = models.CharField(max_length=15)
     address = models.
+    num_cards = models.IntegerField(max = 3)
+
+    def get_payment_cards(self):
+
+    
+
+class Admin()
+
 
 # Payment card Model  
 class PaymentCard(models.Model):
