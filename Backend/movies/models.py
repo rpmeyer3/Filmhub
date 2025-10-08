@@ -85,7 +85,6 @@ class ShowRoom(models.Model):
 
 class Seat(models.Model):
     show = models.ForeignKey(MovieShow, on_delete=models.CASCADE)
-    index = models.IntegerField()
     is_available = models.BooleanField(default=True)
     number = models.CharField(max_length=2) # row + number
 
@@ -131,6 +130,7 @@ class Booking(models.Model):
     total_price = models.DecimalField(max_digits=6, decimal_places=2)
     seats = models.ManyToManyField(Seat)
     booking_time = models.DateTimeField(auto_now_add=True)
+    payment_card = models.ForeignKey(PaymentCard)
 
     class Meta:
         unique_together = ('user', 'id')
