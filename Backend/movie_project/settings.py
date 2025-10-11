@@ -89,6 +89,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+#User model 
+AUTH_USER_MODEL = 'movies.User'
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

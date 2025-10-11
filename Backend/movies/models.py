@@ -1,9 +1,10 @@
 from django.db import models # Base for defining models
-from django.contrib.auth.models import AbstractUser # base for customUser
+from django.contrib.auth.models import AbstractUser, Group, Permission # base for customUser
 from django.contrib.postgres.fields import ArrayField # Used in list of movie categories
-from django.contrib.auth.models import User
 from django.conf import settings # used for AUTH_USER_PROFILE
 import uuid
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 
 class Movie(models.Model):
@@ -23,59 +24,14 @@ class Movie(models.Model):
     category = ArrayField(models.TextField(), blank=True, null=True, db_column='Category')
     poster_url = models.URLField(blank=True, null=True, db_column='Poster_img_URL')
 
-
-class UserFavorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('user', 'movie_id')
-
-    def __str__(self):
-        return f"{self.user.username} favorited movie {self.movie_id}"
-
-
-# Model for storing user reviews of movies
-class MovieReview(models.Model):
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
-    review_text = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ('user', 'movie')
-        ordering = ['-created_at']
-        db_table = 'review_table'
-
-    def __str__(self):
-        return f"{self.user.username} - {self.movie.title} ({self.rating}/5)"
- 
-
-
  # Models for cinemas, showrooms,showtimes, seats, booking, users
-"""
+
 
     
 # Model for ShowRoom
 
 class ShowRoom(models.Model):
     capacity = models.IntegerField()
-
-
-# Model for Seats
-
-class Seat(models.Model):
-    show = models.ForeignKey(MovieShow, on_delete=models.CASCADE)
-    is_available = models.BooleanField(default=True)
-    number = models.CharField(max_length=2) # row + number
-
-    class Meta: 
-        unique_together = ('show', 'index')
- 
    
        
 # Model for MovieShow
@@ -102,18 +58,85 @@ class MovieShow(models.Model):
         return seats
     
 
-        
+
+# Model for Seats
+
+class Seat(models.Model):
+    show = models.ForeignKey(MovieShow, on_delete=models.CASCADE)
+    is_available = models.BooleanField(default=True)
+    number = models.CharField(max_length=2) # row + number
+
+    class Meta: 
+        unique_together = ('show', 'number')
+   
+
+
+# User Model builds off Django's User model to include payment cards and 
+
+class UserType(models.Model):
+    '''Table'''
+    user_type = models.CharField(max_length=10)
+
+
+class User(AbstractUser):
+    USER_STATUS_OPTIONS = (
+        (1, 'Active'),
+        (2, 'Inactive'),
+        (3, 'Suspended')
+    )
+
+    supabase_id = models.UUIDField(unique=True, null=True, blank=True)
+    user_type = models.ForeignKey(UserType, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    status = models.PositiveSmallIntegerField(choices=USER_STATUS_OPTIONS, default=2, null=True)
+
+    # override groups and permissions to avoid reverse accessor clash
+    groups = models.ManyToManyField(
+        Group,
+        related_name='custom_user_set',  # must be unique
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups',
+    )
+
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='custom_user_permissions_set',  # must be unique
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+    # def add_card(self, ):
+
+
+    
+
+
+# Payment card Model  
+class PaymentCard(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cards')
+    cardholder_name = models.CharField(max_length=100)
+    card_number = models.CharField(max_length=16)
+    expiration_date = models.DateField()
+    last_four = models.CharField(max_length=4)
+    brand = models.CharField(max_length=20)  # e.g., 'Visa', 'MasterCard'
+
+    def __str__(self):
+        return f"{self.brand} ending in {self.last_four}"
+    
+
 
 # Model for Booking
 
 class Booking(models.Model):
     id = models.UUIDField(primary_key=True, default= uuid.uuid4, editable=False)
     show = models.ForeignKey(MovieShow, on_delete=models.SET_NULL, null = True)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=6, decimal_places=2)
     seats = models.ManyToManyField(Seat)
     booking_time = models.DateTimeField(auto_now_add=True)
-    payment_card = models.ForeignKey(PaymentCard)
+    payment_card = models.ForeignKey(PaymentCard, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('user', 'id')
@@ -146,49 +169,41 @@ class Booking(models.Model):
     def return_seats(self, seat_list):
          # Update seat table
         for seat in seat_list:
-            if not seat.is_available:
-                raise ValueError(f"Seat {seat.number} is unavailable")
             seat.is_available = True
             seat.save()
     
 
-# Customer Model builds off Django's User model to include payment cards and 
-
-class Customer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    phone_number = models.CharField(max_length=15)
-    address = models.
-    num_cards = models.IntegerField(max = 3)
-
-    def get_payment_cards(self):
-
-    
-
-class Admin()
 
 
-# Payment card Model  
-class PaymentCard(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='cards')
-    cardholder_name = models.CharField(max_length=100)
-    card_number = models.CharField(max_length=16)
-    expiration_date = models.DateField()
-    last_four = models.CharField(max_length=4)
-    brand = models.CharField(max_length=20)  # e.g., 'Visa', 'MasterCard'
+class UserFavorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'movie_id')
 
     def __str__(self):
-        return f"{self.brand} ending in {self.last_four}"
+        return f"{self.user.username} favorited movie {self.movie_id}"
 
 
-"""
+# Model for storing user reviews of movies
+class MovieReview(models.Model):
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
+    review_text = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ('user', 'movie')
+        ordering = ['-created_at']
+        db_table = 'review_table'
 
-
-
-
-
-
+    def __str__(self):
+        return f"{self.user.username} - {self.movie.title} ({self.rating}/5)"
+ 
 
 

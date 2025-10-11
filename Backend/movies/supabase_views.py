@@ -2,6 +2,38 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import connection
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import User, UserType
+import json
+
+
+
+
+
+@csrf_exempt
+def supabase_webhook(request):
+    """View for registration and login thru supabase"""
+    try:
+        data = json.loads(request.body)
+        event = data.get('type')
+        user_record = data.get('record')
+
+        if event == 'INSERT' and user_record:
+            # Determine user type (example: based on email domain or a default)
+            user_type_name = 'customer'  # change logic if needed
+            user_type_obj, created = UserType.objects.get_or_create(user_type=user_type_name)
+
+            # Create the user
+            User.objects.create(
+                supabase_id=user_record['id'],
+                email=user_record.get('email', ''),
+                username=user_record.get('email', ''),  # required field in AbstractUser
+                user_type=user_type_obj
+            )
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 class SupabaseMoviesView(APIView):
     
