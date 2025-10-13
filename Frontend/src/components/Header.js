@@ -2,10 +2,19 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  
+  const { user, signOut, loading } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+    setIsUserMenuOpen(false)
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-black text-white shadow-lg">
@@ -63,10 +72,72 @@ export default function Header() {
               <span className="text-sm">Athens, GA</span>
             </button>
 
-            {/* Sign In */}
-            <button className="hidden md:block bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md font-medium transition-colors">
-              Sign In
-            </button>
+            {/* User Authentication */}
+            {!loading && (
+              <div className="hidden md:flex items-center">
+                {user ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                      className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-md transition-colors"
+                    >
+                      <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium">
+                          {user.user_metadata?.first_name?.[0] || user.email[0].toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="text-sm">
+                        {user.user_metadata?.first_name || user.email.split('@')[0]}
+                      </span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {isUserMenuOpen && (
+                      <div className="absolute right-0 top-12 w-48 bg-white text-black rounded-md shadow-lg py-1 z-50">
+                        <Link 
+                          href="/profile" 
+                          className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        <Link 
+                          href="/booking" 
+                          className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          My Bookings
+                        </Link>
+                        <hr className="my-1" />
+                        <button
+                          onClick={handleSignOut}
+                          className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Link
+                      href="/login"
+                      className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md font-medium transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md font-medium transition-colors"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Mobile menu button */}
             <button
@@ -103,9 +174,52 @@ export default function Header() {
                 <button className="block w-full text-left px-4 py-3 hover:bg-gray-800 transition-colors">
                    Athens, GA
                 </button>
-                <button className="block w-full text-left px-4 py-3 bg-red-600 hover:bg-red-700 transition-colors">
-                  Sign In
-                </button>
+                {!loading && (
+                  user ? (
+                    <div>
+                      <Link 
+                        href="/profile" 
+                        className="block px-4 py-3 hover:bg-gray-800 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Profile ({user.user_metadata?.first_name || user.email.split('@')[0]})
+                      </Link>
+                      <Link 
+                        href="/booking" 
+                        className="block px-4 py-3 hover:bg-gray-800 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        My Bookings
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleSignOut()
+                          setIsMenuOpen(false)
+                        }}
+                        className="block w-full text-left px-4 py-3 hover:bg-gray-800 transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <Link
+                        href="/login"
+                        className="block px-4 py-3 hover:bg-gray-800 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/register"
+                        className="block px-4 py-3 bg-red-600 hover:bg-red-700 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  )
+                )}
               </div>
             </div>
           </div>
