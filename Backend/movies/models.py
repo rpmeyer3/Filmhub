@@ -113,14 +113,17 @@ class User(AbstractUser):
     
 
 
-# Payment card Model  
+# Payment card Model - Links to Supabase profiles via user_id
 class PaymentCard(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cards')
+    user_id = models.UUIDField()  # Links to Supabase auth.users id / profiles table
     cardholder_name = models.CharField(max_length=100)
     card_number = models.CharField(max_length=16)
     expiration_date = models.DateField()
     last_four = models.CharField(max_length=4)
     brand = models.CharField(max_length=20)  # e.g., 'Visa', 'MasterCard'
+
+    class Meta:
+        db_table = 'payment_cards'
 
     def __str__(self):
         return f"{self.brand} ending in {self.last_four}"
@@ -181,10 +184,10 @@ class UserFavorite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'movie_id')
+        unique_together = ('user', 'movie')
 
     def __str__(self):
-        return f"{self.user.username} favorited movie {self.movie_id}"
+        return f"{self.user.username} favorited movie {self.movie.title}"
 
 
 # Model for storing user reviews of movies

@@ -25,4 +25,8 @@ urlpatterns = [
     # Reviews (currently disabled)
     path('reviews/', views.ReviewListView.as_view(), name='review-list'),
     path('reviews/<int:movie_id>/', views.MovieReviewsView.as_view(), name='movie-reviews'),
+    
+    # Payment Cards
+    path('payment-cards/', views.PaymentCardListCreateView.as_view(), name='payment-cards'),
+    path('payment-cards/<int:card_id>/', views.PaymentCardDetailView.as_view(), name='payment-card-detail'),
 ]

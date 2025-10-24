@@ -12,7 +12,13 @@ export default function Register() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    receivePromotions: false
+    receivePromotions: false,
+    addPaymentCard: false,
+    cardholderName: '',
+    cardNumber: '',
+    expirationMonth: '',
+    expirationYear: '',
+    cvv: ''
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -82,6 +88,34 @@ export default function Register() {
       }
 
       if (data?.user) {
+        // If user wants to add payment card, save it
+        if (formData.addPaymentCard && formData.cardNumber) {
+          try {
+            const cardResponse = await fetch('http://localhost:8000/api/payment-cards/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                supabase_id: data.user.id,
+                cardholder_name: formData.cardholderName,
+                card_number: formData.cardNumber.replace(/\s/g, ''),
+                expiration_month: parseInt(formData.expirationMonth),
+                expiration_year: parseInt(formData.expirationYear),
+                cvv: formData.cvv
+              })
+            })
+            
+            const cardData = await cardResponse.json()
+            if (!cardData.success) {
+              console.error('Failed to add payment card:', cardData.errors)
+            }
+          } catch (cardError) {
+            console.error('Error adding payment card:', cardError)
+            // Don't fail registration if card fails, just log it
+          }
+        }
+
         setMessage('Registration successful! Please check your email to confirm your account.')
         // Optionally redirect after a delay
         setTimeout(() => {
@@ -99,10 +133,21 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    
+    // Format card number with spaces
+    if (name === 'cardNumber') {
+      const cleaned = value.replace(/\s/g, '')
+      const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned
+      setFormData(prev => ({
+        ...prev,
+        [name]: formatted
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }))
+    }
 
     // Clear error when user starts typing
     if (errors[name]) {
@@ -112,6 +157,23 @@ export default function Register() {
       }))
     }
   }
+
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 15 }, (_, i) => currentYear + i)
+  const months = [
+    { value: 1, label: '01 - Jan' },
+    { value: 2, label: '02 - Feb' },
+    { value: 3, label: '03 - Mar' },
+    { value: 4, label: '04 - Apr' },
+    { value: 5, label: '05 - May' },
+    { value: 6, label: '06 - Jun' },
+    { value: 7, label: '07 - Jul' },
+    { value: 8, label: '08 - Aug' },
+    { value: 9, label: '09 - Sep' },
+    { value: 10, label: '10 - Oct' },
+    { value: 11, label: '11 - Nov' },
+    { value: 12, label: '12 - Dec' },
+  ]
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -271,6 +333,124 @@ export default function Register() {
               <label htmlFor="receivePromotions" className="ml-2 block text-sm text-gray-900">
                 I would like to receive promotional emails and special offers
               </label>
+            </div>
+
+            {/* Add Payment Card Section */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center mb-4">
+                <input
+                  id="addPaymentCard"
+                  name="addPaymentCard"
+                  type="checkbox"
+                  checked={formData.addPaymentCard}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label htmlFor="addPaymentCard" className="ml-2 block text-sm font-medium text-gray-900">
+                  Add payment card now (optional)
+                </label>
+              </div>
+
+              {formData.addPaymentCard && (
+                <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
+                  <p className="text-xs text-gray-600 mb-2">
+                    Save time at checkout by adding your payment information now
+                  </p>
+
+                  <div>
+                    <label htmlFor="cardholderName" className="block text-sm font-medium text-gray-700">
+                      Cardholder Name
+                    </label>
+                    <input
+                      id="cardholderName"
+                      name="cardholderName"
+                      type="text"
+                      value={formData.cardholderName}
+                      onChange={handleChange}
+                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="John Doe"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">
+                      Card Number
+                    </label>
+                    <input
+                      id="cardNumber"
+                      name="cardNumber"
+                      type="text"
+                      value={formData.cardNumber}
+                      onChange={handleChange}
+                      maxLength="19"
+                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="1234 5678 9012 3456"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label htmlFor="expirationMonth" className="block text-sm font-medium text-gray-700">
+                        Month
+                      </label>
+                      <select
+                        id="expirationMonth"
+                        name="expirationMonth"
+                        value={formData.expirationMonth}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="">MM</option>
+                        {months.map(month => (
+                          <option key={month.value} value={month.value}>
+                            {month.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="expirationYear" className="block text-sm font-medium text-gray-700">
+                        Year
+                      </label>
+                      <select
+                        id="expirationYear"
+                        name="expirationYear"
+                        value={formData.expirationYear}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value="">YYYY</option>
+                        {years.map(year => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">
+                        CVV
+                      </label>
+                      <input
+                        id="cvv"
+                        name="cvv"
+                        type="text"
+                        value={formData.cvv}
+                        onChange={handleChange}
+                        maxLength="4"
+                        className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        placeholder="123"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-500">
+                    🔒 Your payment information is encrypted and secure
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

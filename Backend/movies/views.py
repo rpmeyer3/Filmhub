@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from django.db import connection
-from .models import Movie, UserFavorite, MovieReview
-from .serializers import MovieSerializer, UserFavoriteSerializer, MovieReviewSerializer
+from .models import Movie, UserFavorite, MovieReview, PaymentCard
+from .serializers import MovieSerializer, UserFavoriteSerializer, MovieReviewSerializer, PaymentCardSerializer
 from django.conf import settings
 
 
@@ -203,3 +203,141 @@ class MovieReviewsView(APIView):
             {'error': 'Movie reviews functionality requires Django Movie model integration'}, 
             status=status.HTTP_501_NOT_IMPLEMENTED
         )
+
+
+# Payment Card Views
+class PaymentCardListCreateView(APIView):
+    """List all payment cards for a user or create a new one"""
+    
+    def get(self, request):
+        """Get all payment cards for the authenticated user"""
+        try:
+            # Get supabase_id from query params (in production, use authentication)
+            supabase_id = request.query_params.get('supabase_id')
+            
+            if not supabase_id:
+                return Response(
+                    {'error': 'supabase_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get all cards for this user_id
+            cards = PaymentCard.objects.filter(user_id=supabase_id)
+            serializer = PaymentCardSerializer(cards, many=True)
+            
+            return Response({
+                'success': True,
+                'cards': serializer.data,
+                'count': cards.count()
+            })
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch payment cards: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def post(self, request):
+        """Create a new payment card for the authenticated user"""
+        try:
+            # Get supabase_id from request data
+            supabase_id = request.data.get('supabase_id')
+            
+            if not supabase_id:
+                return Response(
+                    {'error': 'supabase_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Add user_id to the data
+            data = request.data.copy()
+            data['user_id'] = supabase_id
+            
+            # Create serializer with data
+            serializer = PaymentCardSerializer(data=data)
+            
+            if serializer.is_valid():
+                # Save the card
+                serializer.save()
+                return Response({
+                    'success': True,
+                    'message': 'Payment card added successfully',
+                    'card': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            
+            return Response({
+                'success': False,
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create payment card: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PaymentCardDetailView(APIView):
+    """Retrieve, update or delete a payment card"""
+    
+    def get(self, request, card_id):
+        """Get a specific payment card"""
+        try:
+            supabase_id = request.query_params.get('supabase_id')
+            
+            if not supabase_id:
+                return Response(
+                    {'error': 'supabase_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get card and verify ownership
+            try:
+                card = PaymentCard.objects.get(id=card_id, user_id=supabase_id)
+            except PaymentCard.DoesNotExist:
+                return Response(
+                    {'error': 'Payment card not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            serializer = PaymentCardSerializer(card)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch payment card: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, card_id):
+        """Delete a payment card"""
+        try:
+            supabase_id = request.query_params.get('supabase_id')
+            
+            if not supabase_id:
+                return Response(
+                    {'error': 'supabase_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get card and verify ownership
+            try:
+                card = PaymentCard.objects.get(id=card_id, user_id=supabase_id)
+            except PaymentCard.DoesNotExist:
+                return Response(
+                    {'error': 'Payment card not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            card.delete()
+            
+            return Response({
+                'success': True,
+                'message': 'Payment card deleted successfully'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to delete payment card: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
