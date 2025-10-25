@@ -53,7 +53,7 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         
         # Check length (13-19 digits for most cards)
         if len(card_number) < 13 or len(card_number) > 19:
-            raise serializers.ValidationError("Card number must be between 13 and 19 digits")
+            raise serializers.ValidationError(f"Card number must be between 13 and 19 digits (got {len(card_number)})")
         
         # Luhn algorithm
         def luhn_check(card_num):
@@ -68,7 +68,7 @@ class PaymentCardSerializer(serializers.ModelSerializer):
             return checksum % 10 == 0
         
         if not luhn_check(card_number):
-            raise serializers.ValidationError("Invalid card number")
+            raise serializers.ValidationError("Invalid card number (failed Luhn check)")
         
         return card_number
     
