@@ -125,10 +125,10 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            Cinema E-Booking Deliverable #3 
+            Welcome to Our Film-Hub for Deliverable 6!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Just showing that it works...
+            Your premier destination for movie tickets and entertainment. Browse our selection of films and book your seats today.
           </p>
         </div>
 

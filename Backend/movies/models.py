@@ -74,7 +74,6 @@ class Seat(models.Model):
 # User Model builds off Django's User model to include payment cards and 
 
 class UserType(models.Model):
-    '''Table'''
     user_type = models.CharField(max_length=10)
 
 
