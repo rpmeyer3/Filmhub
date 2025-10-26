@@ -207,10 +207,8 @@ class MovieReviewsView(APIView):
 
 # Payment Card Views
 class PaymentCardListCreateView(APIView):
-    """List all payment cards for a user or create a new one"""
     
     def get(self, request):
-        """Get all payment cards for the authenticated user"""
         try:
             # Get supabase_id from query params (in production, use authentication)
             supabase_id = request.query_params.get('supabase_id')
@@ -238,7 +236,6 @@ class PaymentCardListCreateView(APIView):
             )
     
     def post(self, request):
-        """Create a new payment card for the authenticated user"""
         try:
             # Get supabase_id from request data
             supabase_id = request.data.get('supabase_id')
@@ -278,10 +275,8 @@ class PaymentCardListCreateView(APIView):
 
 
 class PaymentCardDetailView(APIView):
-    """Retrieve, update or delete a payment card"""
     
     def get(self, request, card_id):
-        """Get a specific payment card"""
         try:
             supabase_id = request.query_params.get('supabase_id')
             
@@ -310,7 +305,6 @@ class PaymentCardDetailView(APIView):
             )
     
     def delete(self, request, card_id):
-        """Delete a payment card"""
         try:
             supabase_id = request.query_params.get('supabase_id')
             

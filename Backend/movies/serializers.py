@@ -43,7 +43,6 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         }
     
     def validate_card_number(self, value):
-        """Validate card number using Luhn algorithm"""
         # Remove spaces and dashes
         card_number = re.sub(r'[\s-]', '', value)
         
@@ -51,7 +50,7 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         if not card_number.isdigit():
             raise serializers.ValidationError("Card number must contain only digits")
         
-        # Check length (13-19 digits for most cards)
+        # Check length 
         if len(card_number) < 13 or len(card_number) > 19:
             raise serializers.ValidationError(f"Card number must be between 13 and 19 digits (got {len(card_number)})")
         
@@ -73,14 +72,12 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         return card_number
     
     def validate_expiration_year(self, value):
-        """Validate expiration year"""
         current_year = date.today().year
         if value < current_year or value > current_year + 20:
             raise serializers.ValidationError("Invalid expiration year")
         return value
     
     def validate(self, data):
-        """Validate expiration date"""
         month = data.get('expiration_month')
         year = data.get('expiration_year')
         
@@ -97,7 +94,6 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         return data
     
     def get_card_brand(self, card_number):
-        """Determine card brand from card number"""
         # Remove spaces
         card_number = re.sub(r'[\s-]', '', card_number)
         
@@ -114,7 +110,6 @@ class PaymentCardSerializer(serializers.ModelSerializer):
             return 'Unknown'
     
     def create(self, validated_data):
-        """Create payment card with encrypted number"""
         # Extract write-only fields
         cvv = validated_data.pop('cvv')
         expiration_month = validated_data.pop('expiration_month')
@@ -146,7 +141,6 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         return card
     
     def to_representation(self, instance):
-        """Customize output to hide sensitive data"""
         representation = super().to_representation(instance)
         # Only show last 4 digits, not full card number
         if 'card_number' in representation:

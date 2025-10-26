@@ -13,7 +13,6 @@ import json
 
 @csrf_exempt
 def supabase_webhook(request):
-    """View for registration and login thru supabase"""
     try:
         data = json.loads(request.body)
         event = data.get('type')
