@@ -111,6 +111,13 @@ export default function Header() {
                           Payment Methods
                         </Link>
                         <Link 
+                          href="/change-password" 
+                          className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Change Password
+                        </Link>
+                        <Link 
                           href="/booking" 
                           className="block px-4 py-2 hover:bg-gray-100 transition-colors"
                           onClick={() => setIsUserMenuOpen(false)}
@@ -197,6 +204,13 @@ export default function Header() {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Payment Methods
+                      </Link>
+                      <Link 
+                        href="/change-password" 
+                        className="block px-4 py-3 hover:bg-gray-800 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Change Password
                       </Link>
                       <Link 
                         href="/booking" 
