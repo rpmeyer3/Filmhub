@@ -40,7 +40,7 @@ export default function AdminPage() {
               <p className="text-gray-600">Add, edit, and remove movies from the catalog</p>
             </Link>
 
-            {/* Manage Showtimes */}
+            {/* Manage Showrooms */}
             <Link 
               href="/admin/showtimes"
               className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 group"
@@ -48,12 +48,28 @@ export default function AdminPage() {
               <div className="flex items-center mb-4">
                 <div className="bg-green-100 rounded-lg p-3 group-hover:bg-green-200 transition-colors">
                   <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800 ml-4">Manage Showrooms</h2>
+              </div>
+              <p className="text-gray-600">Create and configure theater showrooms with seat layouts</p>
+            </Link>
+
+            {/* Schedule Showtimes */}
+            <Link 
+              href="/admin/schedule"
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 group"
+            >
+              <div className="flex items-center mb-4">
+                <div className="bg-teal-100 rounded-lg p-3 group-hover:bg-teal-200 transition-colors">
+                  <svg className="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800 ml-4">Manage Showtimes</h2>
+                <h2 className="text-xl font-semibold text-gray-800 ml-4">Schedule Showtimes</h2>
               </div>
-              <p className="text-gray-600">Schedule movie showtimes and manage showrooms</p>
+              <p className="text-gray-600">Assign movies to showrooms with specific showtimes</p>
             </Link>
 
             {/* Manage Promotions */}

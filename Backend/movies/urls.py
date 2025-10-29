@@ -37,4 +37,8 @@ urlpatterns = [
     # Admin showroom endpoints
     path('admin/showrooms/', views.AdminShowRoomListView.as_view(), name='admin-showroom-list'),
     path('admin/showrooms/<int:showroom_id>/', views.AdminShowRoomDetailView.as_view(), name='admin-showroom-detail'),
+    
+    # Admin showtime/scheduling endpoints
+    path('admin/showtimes/', views.AdminMovieShowListView.as_view(), name='admin-showtime-list'),
+    path('admin/showtimes/<int:showtime_id>/', views.AdminMovieShowDetailView.as_view(), name='admin-showtime-detail'),
 ]

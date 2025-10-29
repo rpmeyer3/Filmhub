@@ -623,3 +623,180 @@ class AdminShowRoomDetailView(APIView):
                 {'error': f'Failed to delete showroom: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AdminMovieShowListView(APIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT 
+                        st.id,
+                        st.movie_id,
+                        m."Title" as movie_title,
+                        st.showroom_id,
+                        sr.name as showroom_name,
+                        st.showtime,
+                        st.price,
+                        st.is_now_showing,
+                        st.created_at,
+                        st.updated_at
+                    FROM showtime_table st
+                    JOIN "Movies" m ON st.movie_id = m.id
+                    JOIN showrooms sr ON st.showroom_id = sr.id
+                    ORDER BY st.showtime DESC
+                ''')
+                
+                columns = [col[0] for col in cursor.description]
+                showtimes = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                
+                return Response({
+                    'success': True,
+                    'showtimes': showtimes,
+                    'count': len(showtimes)
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch showtimes: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def post(self, request):
+        try:
+            data = request.data
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    INSERT INTO showtime_table (movie_id, showroom_id, showtime, price, is_now_showing)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id, movie_id, showroom_id, showtime, price, is_now_showing, created_at, updated_at
+                ''', [
+                    data.get('movie_id'),
+                    data.get('showroom_id'),
+                    data.get('showtime'),
+                    data.get('price', 10.00),
+                    data.get('is_now_showing', True)
+                ])
+                
+                columns = [col[0] for col in cursor.description]
+                showtime = dict(zip(columns, cursor.fetchone()))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Showtime created successfully',
+                    'showtime': showtime
+                }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create showtime: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AdminMovieShowDetailView(APIView):
+    def get(self, request, showtime_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT 
+                        st.id,
+                        st.movie_id,
+                        m."Title" as movie_title,
+                        st.showroom_id,
+                        sr.name as showroom_name,
+                        st.showtime,
+                        st.price,
+                        st.is_now_showing,
+                        st.created_at,
+                        st.updated_at
+                    FROM showtime_table st
+                    JOIN "Movies" m ON st.movie_id = m.id
+                    JOIN showrooms sr ON st.showroom_id = sr.id
+                    WHERE st.id = %s
+                ''', [showtime_id])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Showtime not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                showtime = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'showtime': showtime
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch showtime: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def put(self, request, showtime_id):
+        try:
+            data = request.data
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    UPDATE showtime_table
+                    SET movie_id = %s, showroom_id = %s, showtime = %s, price = %s, is_now_showing = %s
+                    WHERE id = %s
+                    RETURNING id, movie_id, showroom_id, showtime, price, is_now_showing, created_at, updated_at
+                ''', [
+                    data.get('movie_id'),
+                    data.get('showroom_id'),
+                    data.get('showtime'),
+                    data.get('price'),
+                    data.get('is_now_showing'),
+                    showtime_id
+                ])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Showtime not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                showtime = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Showtime updated successfully',
+                    'showtime': showtime
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update showtime: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, showtime_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM showtime_table WHERE id = %s', [showtime_id])
+                
+                if cursor.rowcount == 0:
+                    return Response(
+                        {'error': 'Showtime not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                return Response({
+                    'success': True,
+                    'message': 'Showtime deleted successfully'
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to delete showtime: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
