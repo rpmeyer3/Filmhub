@@ -335,3 +335,140 @@ class PaymentCardDetailView(APIView):
                 {'error': f'Failed to delete payment card: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AdminMovieView(APIView):
+    def post(self, request):
+        try:
+            with connection.cursor() as cursor:
+                data = request.data
+                
+                # Insert new movie into Supabase Movies table
+                cursor.execute('''
+                    INSERT INTO "Movies" (
+                        "Title", "Year", "Synopsis", "TrailerURL", "TrailerPicLink",
+                        "MPAA_US_Film_Rating", "isRunning", "isComingSoon", 
+                        "Director", "Producer", "Cast", "Category", "Poster_img_URL"
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, "Title", "Year", "Synopsis", "Director", "Producer", 
+                              "Cast", "Category", "Poster_img_URL", "TrailerURL", 
+                              "TrailerPicLink", "MPAA_US_Film_Rating", "isRunning", "isComingSoon"
+                ''', [
+                    data.get('title'),
+                    data.get('year'),
+                    data.get('synopsis'),
+                    data.get('trailer_url'),
+                    data.get('trailer_pic_url'),
+                    data.get('mpaa_rating'),
+                    data.get('is_running', False),
+                    data.get('is_coming_soon', False),
+                    data.get('director'),
+                    data.get('producer'),
+                    data.get('cast'),
+                    data.get('category', []),
+                    data.get('poster_url')
+                ])
+                
+                columns = [col[0] for col in cursor.description]
+                row = cursor.fetchone()
+                movie = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Movie created successfully',
+                    'movie': movie
+                }, status=status.HTTP_201_CREATED)
+                
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create movie: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def put(self, request, movie_id):
+        try:
+            with connection.cursor() as cursor:
+                data = request.data
+                
+                # Update movie in Supabase Movies table
+                cursor.execute('''
+                    UPDATE "Movies"
+                    SET 
+                        "Title" = %s,
+                        "Year" = %s,
+                        "Synopsis" = %s,
+                        "TrailerURL" = %s,
+                        "TrailerPicLink" = %s,
+                        "MPAA_US_Film_Rating" = %s,
+                        "isRunning" = %s,
+                        "isComingSoon" = %s,
+                        "Director" = %s,
+                        "Producer" = %s,
+                        "Cast" = %s,
+                        "Category" = %s,
+                        "Poster_img_URL" = %s
+                    WHERE id = %s
+                    RETURNING id, "Title", "Year", "Synopsis", "Director", "Producer", 
+                              "Cast", "Category", "Poster_img_URL", "TrailerURL", 
+                              "TrailerPicLink", "MPAA_US_Film_Rating", "isRunning", "isComingSoon"
+                ''', [
+                    data.get('title'),
+                    data.get('year'),
+                    data.get('synopsis'),
+                    data.get('trailer_url'),
+                    data.get('trailer_pic_url'),
+                    data.get('mpaa_rating'),
+                    data.get('is_running', False),
+                    data.get('is_coming_soon', False),
+                    data.get('director'),
+                    data.get('producer'),
+                    data.get('cast'),
+                    data.get('category', []),
+                    data.get('poster_url'),
+                    movie_id
+                ])
+                
+                if cursor.rowcount == 0:
+                    return Response(
+                        {'error': 'Movie not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                row = cursor.fetchone()
+                movie = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Movie updated successfully',
+                    'movie': movie
+                }, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update movie: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, movie_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM "Movies" WHERE id = %s', [movie_id])
+                
+                if cursor.rowcount == 0:
+                    return Response(
+                        {'error': 'Movie not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                return Response({
+                    'success': True,
+                    'message': 'Movie deleted successfully'
+                }, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to delete movie: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

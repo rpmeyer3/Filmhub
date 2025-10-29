@@ -9,7 +9,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   
-  const { user, signOut, loading } = useAuth()
+  const { user, isAdmin, signOut, loading } = useAuth()
 
   const handleSignOut = async () => {
     await signOut()
@@ -96,6 +96,18 @@ export default function Header() {
                     
                     {isUserMenuOpen && (
                       <div className="absolute right-0 top-12 w-48 bg-white text-black rounded-md shadow-lg py-1 z-50">
+                        {isAdmin && (
+                          <>
+                            <Link 
+                              href="/admin" 
+                              className="block px-4 py-2 hover:bg-gray-100 transition-colors font-semibold text-blue-600"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              Admin Portal
+                            </Link>
+                            <hr className="my-1" />
+                          </>
+                        )}
                         <Link 
                           href="/profile" 
                           className="block px-4 py-2 hover:bg-gray-100 transition-colors"
@@ -191,6 +203,15 @@ export default function Header() {
                 {!loading && (
                   user ? (
                     <div>
+                      {isAdmin && (
+                        <Link 
+                          href="/admin" 
+                          className="block px-4 py-3 bg-blue-600 hover:bg-blue-700 transition-colors font-semibold"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Admin Portal
+                        </Link>
+                      )}
                       <Link 
                         href="/profile" 
                         className="block px-4 py-3 hover:bg-gray-800 transition-colors"

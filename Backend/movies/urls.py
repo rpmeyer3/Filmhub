@@ -29,4 +29,8 @@ urlpatterns = [
     # Payment Cards
     path('payment-cards/', views.PaymentCardListCreateView.as_view(), name='payment-cards'),
     path('payment-cards/<int:card_id>/', views.PaymentCardDetailView.as_view(), name='payment-card-detail'),
+    
+    # Admin endpoints
+    path('admin/movies/', views.AdminMovieView.as_view(), name='admin-movie-create'),
+    path('admin/movies/<int:movie_id>/', views.AdminMovieView.as_view(), name='admin-movie-detail'),
 ]

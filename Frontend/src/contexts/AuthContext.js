@@ -15,13 +15,47 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Helper to check admin status
+  const checkAdminStatus = async (userId) => {
+    if (!userId) {
+      setIsAdmin(false)
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', userId)
+        .single()
+
+      if (error) {
+        console.error('Error checking admin status:', error)
+        setIsAdmin(false)
+        return
+      }
+
+      setIsAdmin(data?.is_admin ?? false)
+    } catch (error) {
+      console.error('Error checking admin status:', error)
+      setIsAdmin(false)
+    }
+  }
 
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      
+      if (currentUser) {
+        await checkAdminStatus(currentUser.id)
+      }
+      
       setLoading(false)
     }
 
@@ -30,7 +64,15 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
+        
+        if (currentUser) {
+          await checkAdminStatus(currentUser.id)
+        } else {
+          setIsAdmin(false)
+        }
+        
         setLoading(false)
       }
     )
@@ -126,6 +168,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    isAdmin,
     loading,
     signUp,
     signIn,
