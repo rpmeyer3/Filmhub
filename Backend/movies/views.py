@@ -472,3 +472,154 @@ class AdminMovieView(APIView):
                 {'error': f'Failed to delete movie: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AdminShowRoomListView(APIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT id, name, capacity, rows, seats_per_row, created_at, updated_at
+                    FROM showrooms
+                    ORDER BY id
+                ''')
+                
+                columns = [col[0] for col in cursor.description]
+                showrooms = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                
+                return Response({
+                    'success': True,
+                    'showrooms': showrooms,
+                    'count': len(showrooms)
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch showrooms: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def post(self, request):
+        try:
+            data = request.data
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    INSERT INTO showrooms (name, capacity, rows, seats_per_row)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id, name, capacity, rows, seats_per_row, created_at, updated_at
+                ''', [
+                    data.get('name'),
+                    data.get('capacity'),
+                    data.get('rows'),
+                    data.get('seats_per_row')
+                ])
+                
+                columns = [col[0] for col in cursor.description]
+                showroom = dict(zip(columns, cursor.fetchone()))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Showroom created successfully',
+                    'showroom': showroom
+                }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create showroom: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AdminShowRoomDetailView(APIView):
+    def get(self, request, showroom_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT id, name, capacity, rows, seats_per_row, created_at, updated_at
+                    FROM showrooms
+                    WHERE id = %s
+                ''', [showroom_id])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Showroom not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                showroom = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'showroom': showroom
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch showroom: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def put(self, request, showroom_id):
+        try:
+            data = request.data
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    UPDATE showrooms
+                    SET name = %s, capacity = %s, rows = %s, seats_per_row = %s
+                    WHERE id = %s
+                    RETURNING id, name, capacity, rows, seats_per_row, created_at, updated_at
+                ''', [
+                    data.get('name'),
+                    data.get('capacity'),
+                    data.get('rows'),
+                    data.get('seats_per_row'),
+                    showroom_id
+                ])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Showroom not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                showroom = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Showroom updated successfully',
+                    'showroom': showroom
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update showroom: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, showroom_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM showrooms WHERE id = %s', [showroom_id])
+                
+                if cursor.rowcount == 0:
+                    return Response(
+                        {'error': 'Showroom not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                return Response({
+                    'success': True,
+                    'message': 'Showroom deleted successfully'
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to delete showroom: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

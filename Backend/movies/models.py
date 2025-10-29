@@ -31,7 +31,13 @@ class Movie(models.Model):
 # Model for ShowRoom
 
 class ShowRoom(models.Model):
+    name = models.CharField(max_length=100, default='Showroom 1')
     capacity = models.IntegerField()
+    rows = models.IntegerField(default=10)
+    seats_per_row = models.IntegerField(default=12)
+    
+    def __str__(self):
+        return f"{self.name} (Capacity: {self.capacity})"
    
        
 # Model for MovieShow
@@ -40,6 +46,7 @@ class MovieShow(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     showtime = models.DateTimeField()
     is_now_showing = models.BooleanField(default=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=10.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     showroom = models.ForeignKey(ShowRoom, on_delete = models.CASCADE)
@@ -114,7 +121,7 @@ class User(AbstractUser):
 
 # Payment card Model - Links to Supabase profiles via user_id
 class PaymentCard(models.Model):
-    user_id = models.UUIDField()  # Links to Supabase auth.users id / profiles table
+    user_id = models.UUIDField(null=True, blank=True)  # Links to Supabase auth.users id / profiles table
     cardholder_name = models.CharField(max_length=100)
     card_number = models.CharField(max_length=16)
     expiration_date = models.DateField()
