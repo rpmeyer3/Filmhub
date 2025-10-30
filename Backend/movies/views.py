@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from django.db import connection
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Movie, UserFavorite, MovieReview, PaymentCard
 from .serializers import MovieSerializer, UserFavoriteSerializer, MovieReviewSerializer, PaymentCardSerializer
-from django.conf import settings
 
 
 class MovieListView(APIView):
@@ -951,6 +952,129 @@ class AdminPromotionDetailView(APIView):
         except Exception as e:
             return Response(
                 {'error': f'Failed to delete promotion: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class SendPromotionEmailView(APIView):
+    def post(self, request, promotion_id):
+        try:
+            # Get promotion details
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT id, code, discount_percentage, start_date, end_date, is_active
+                    FROM promotions
+                    WHERE id = %s
+                ''', [promotion_id])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Promotion not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                promotion = dict(zip(columns, row))
+                
+                # Get all users who subscribed for promotions from Supabase
+                from supabase import create_client
+                import os
+                
+                supabase_url = os.getenv('SUPABASE_URL')
+                supabase_key = os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('SUPABASE_ANON_KEY')
+                
+                if not supabase_url or not supabase_key:
+                    return Response(
+                        {'error': f'Supabase configuration missing. URL: {bool(supabase_url)}, Key: {bool(supabase_key)}'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+                
+                # Query PostgreSQL directly for users who subscribed to promotions
+                # We need to join the profiles table with auth.users to get emails
+                cursor.execute('''
+                    SELECT 
+                        p.id,
+                        p.first_name,
+                        p.last_name,
+                        au.email
+                    FROM profiles p
+                    JOIN auth.users au ON p.id = au.id
+                    WHERE p.receive_promotions = TRUE
+                ''')
+                
+                columns = [col[0] for col in cursor.description]
+                subscribed_users = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                
+                if not subscribed_users:
+                    return Response({
+                        'success': True,
+                        'message': 'No users subscribed to promotions',
+                        'emails_sent': 0
+                    }, status=status.HTTP_200_OK)
+                
+                # Send email to each subscribed user
+                emails_sent = 0
+                failed_emails = []
+                
+                for user in subscribed_users:
+                    try:
+                        user_email = user.get('email')
+                        first_name = user.get('first_name', 'Valued Customer')
+                        
+                        subject = f'Special Offer: {promotion["code"]} - {promotion["discount_percentage"]}% Off!'
+                        
+                        message = f'''
+Hello {first_name},
+
+We have an exciting promotion for you!
+
+Use promo code: {promotion["code"]}
+Get {promotion["discount_percentage"]}% off your next booking!
+
+Valid from {promotion["start_date"]} to {promotion["end_date"]}
+
+Don't miss out on this great deal. Book your tickets today!
+
+Visit Film-Hub to book now: http://localhost:3000
+
+Thank you for being a valued customer!
+
+Best regards,
+The Film-Hub Team
+
+---
+To unsubscribe from promotional emails, please visit your profile settings.
+                        '''
+                        
+                        send_mail(
+                            subject=subject,
+                            message=message,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[user_email],
+                            fail_silently=False,
+                        )
+                        
+                        emails_sent += 1
+                        
+                    except Exception as email_error:
+                        print(f"Failed to send email to {user_email}: {str(email_error)}")
+                        failed_emails.append(user_email if 'user_email' in locals() else 'unknown')
+                
+                return Response({
+                    'success': True,
+                    'message': f'Promotion emails sent successfully',
+                    'emails_sent': emails_sent,
+                    'total_subscribed': len(subscribed_users),
+                    'failed_emails': failed_emails
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            import traceback
+            print(f"Error sending promotion emails: {str(e)}")
+            print(traceback.format_exc())
+            return Response(
+                {'error': f'Failed to send promotion emails: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

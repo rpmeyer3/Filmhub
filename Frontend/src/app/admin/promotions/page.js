@@ -92,6 +92,29 @@ export default function AdminPromotions() {
     setShowForm(true);
   };
 
+  const handleSendEmail = async (id) => {
+    if (!confirm('Send promotional email to all subscribed users? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/promotions/${id}/send-email/`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`${data.message}\nEmails sent: ${data.emails_sent} out of ${data.total_subscribed} subscribed users`);
+      } else {
+        alert(data.error || 'Failed to send promotion emails');
+      }
+    } catch (error) {
+      console.error('Error sending promotion emails:', error);
+      alert('Failed to send promotion emails');
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this promotion?')) {
       return;
@@ -333,6 +356,13 @@ export default function AdminPromotions() {
                         )}
                       </td>
                       <td className="px-6 py-4 space-x-2">
+                        <button
+                          onClick={() => handleSendEmail(promo.id)}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded transition"
+                          title="Send promotion email to subscribed users"
+                        >
+                          Send Email
+                        </button>
                         <button
                           onClick={() => handleEdit(promo)}
                           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition"

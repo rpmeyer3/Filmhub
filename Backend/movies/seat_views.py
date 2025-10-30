@@ -332,3 +332,99 @@ Thank you for choosing our cinema!
                 {'error': f'Failed to create booking: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class CancelBookingView(APIView):
+    """Cancel a booking and process refund"""
+    def post(self, request, booking_id):
+        try:
+            from datetime import datetime, timedelta
+            
+            with connection.cursor() as cursor:
+                # Get booking details
+                cursor.execute('''
+                    SELECT 
+                        b.id,
+                        b.booking_number,
+                        b.status,
+                        b.total_amount,
+                        b.user_id,
+                        sht.showtime
+                    FROM bookings b
+                    JOIN showtimes sht ON b.showtime_id = sht.id
+                    WHERE b.id = %s
+                ''', [booking_id])
+                
+                booking = cursor.fetchone()
+                
+                if not booking:
+                    return Response(
+                        {'error': 'Booking not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                booking_id, booking_number, booking_status, total_amount, user_id, showtime = booking
+                
+                # Check if booking is already cancelled
+                if booking_status == 'cancelled':
+                    return Response(
+                        {'error': 'This booking has already been cancelled'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Check if cancellation is allowed (60 minutes before showtime)
+                now = datetime.now()
+                showtime_dt = showtime
+                
+                # If showtime is timezone-aware, make now timezone-aware too
+                if showtime_dt.tzinfo is not None:
+                    from django.utils import timezone
+                    now = timezone.now()
+                
+                time_until_showtime = showtime_dt - now
+                minutes_until_showtime = time_until_showtime.total_seconds() / 60
+                
+                if minutes_until_showtime <= 60:
+                    return Response({
+                        'error': f'Cannot cancel booking. Cancellations must be made at least 60 minutes before showtime. Only {int(minutes_until_showtime)} minutes remaining.',
+                        'minutes_remaining': int(minutes_until_showtime)
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Release the seats back to available
+                cursor.execute('''
+                    UPDATE seats
+                    SET is_available = TRUE
+                    WHERE id IN (
+                        SELECT seat_id 
+                        FROM booking_seats 
+                        WHERE booking_id = %s
+                    )
+                ''', [booking_id])
+                
+                # Update booking status to cancelled
+                cursor.execute('''
+                    UPDATE bookings
+                    SET status = 'cancelled',
+                        updated_at = NOW()
+                    WHERE id = %s
+                ''', [booking_id])
+                
+                # In a real system, you would process the refund here
+                # For now, we'll just return success with the refund amount
+                
+                return Response({
+                    'success': True,
+                    'message': f'Booking #{booking_number} has been cancelled successfully',
+                    'booking_number': booking_number,
+                    'refund_amount': float(total_amount),
+                    'minutes_until_showtime': int(minutes_until_showtime)
+                }, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            import traceback
+            print(f"Error cancelling booking: {str(e)}")
+            print(traceback.format_exc())
+            return Response(
+                {'error': f'Failed to cancel booking: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

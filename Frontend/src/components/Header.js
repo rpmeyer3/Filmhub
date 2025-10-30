@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Header() {
@@ -10,10 +11,12 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   
   const { user, isAdmin, signOut, loading } = useAuth()
+  const router = useRouter()
 
   const handleSignOut = async () => {
     await signOut()
     setIsUserMenuOpen(false)
+    router.push('/')
   }
 
   return (
@@ -130,7 +133,7 @@ export default function Header() {
                           Change Password
                         </Link>
                         <Link 
-                          href="/booking" 
+                          href="/profile?tab=bookings" 
                           className="block px-4 py-2 hover:bg-gray-100 transition-colors"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
@@ -234,7 +237,7 @@ export default function Header() {
                         Change Password
                       </Link>
                       <Link 
-                        href="/booking" 
+                        href="/profile?tab=bookings" 
                         className="block px-4 py-3 hover:bg-gray-800 transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >

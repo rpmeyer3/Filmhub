@@ -92,6 +92,26 @@ export const AuthProvider = ({ children }) => {
       })
       
       if (error) throw error
+      
+      // Create profile record if user was created
+      if (data?.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: email,
+            first_name: userData.first_name || '',
+            last_name: userData.last_name || '',
+            receive_promotions: userData.receive_promotions || false,
+            is_admin: false
+          })
+        
+        if (profileError) {
+          console.error('Error creating profile:', profileError)
+          // Don't fail signup if profile creation fails - it might already exist from trigger
+        }
+      }
+      
       return { data, error: null }
     } catch (error) {
       return { data: null, error }
@@ -155,12 +175,29 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateProfile = async (updates) => {
     try {
-      const { data, error } = await supabase.auth.updateUser({
+      // Update auth metadata
+      const { data: authData, error: authError } = await supabase.auth.updateUser({
         data: updates
       })
       
-      if (error) throw error
-      return { data, error: null }
+      if (authError) throw authError
+      
+      // Try to update the profiles table, but don't fail if it doesn't work
+      // (it might be handled by a database trigger)
+      try {
+        await supabase
+          .from('profiles')
+          .update({
+            first_name: updates.first_name,
+            last_name: updates.last_name,
+            receive_promotions: updates.receive_promotions
+          })
+          .eq('id', user.id)
+      } catch (profileError) {
+        console.log('Profile table update skipped (may be handled by trigger):', profileError)
+      }
+      
+      return { data: authData, error: null }
     } catch (error) {
       return { data: null, error }
     }

@@ -22,6 +22,15 @@ export default function Profile() {
   const { user, updateProfile, loading: authLoading } = useAuth()
   const router = useRouter()
 
+  // Check URL parameter for tab on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
+    if (tab === 'bookings') {
+      setActiveTab('bookings')
+    }
+  }, [])
+
   // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
@@ -78,6 +87,41 @@ export default function Profile() {
     })
   }
 
+  const canCancelBooking = (showtime) => {
+    if (!showtime) return false
+    const showtimeDate = new Date(showtime)
+    const now = new Date()
+    const minutesUntilShowtime = (showtimeDate - now) / (1000 * 60)
+    return minutesUntilShowtime > 60 // Can cancel if more than 60 minutes before showtime
+  }
+
+  const handleCancelBooking = async (bookingId, bookingNumber) => {
+    if (!confirm(`Are you sure you want to cancel booking #${bookingNumber}? You will receive a full refund.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/bookings/${bookingId}/cancel/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`Booking cancelled successfully! Refund of $${data.refund_amount.toFixed(2)} has been processed.`)
+        fetchBookings() // Refresh the bookings list
+      } else {
+        alert(data.error || 'Failed to cancel booking')
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error)
+      alert('Failed to cancel booking. Please try again.')
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -93,11 +137,18 @@ export default function Profile() {
       })
 
       if (error) {
+        console.error('Profile update error:', error)
         throw error
       }
 
       setMessage('Profile updated successfully!')
+      
+      // Clear message after 5 seconds
+      setTimeout(() => {
+        setMessage('')
+      }, 5000)
     } catch (error) {
+      console.error('Profile update caught error:', error)
       setErrors({
         submit: error.message || 'Failed to update profile. Please try again.'
       })
@@ -368,6 +419,35 @@ export default function Profile() {
                               <p className="text-2xl font-bold text-indigo-600">${booking.total_amount.toFixed(2)}</p>
                             </div>
                           </div>
+                          
+                          {/* Cancel Button */}
+                          {booking.status === 'confirmed' && canCancelBooking(booking.showtime) && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <button
+                                onClick={() => handleCancelBooking(booking.id, booking.booking_number)}
+                                className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                              >
+                                Cancel Booking & Get Refund
+                              </button>
+                              <p className="text-xs text-gray-500 text-center mt-2">
+                                Free cancellation up to 60 minutes before showtime
+                              </p>
+                            </div>
+                          )}
+                          {booking.status === 'confirmed' && !canCancelBooking(booking.showtime) && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <p className="text-sm text-gray-500 text-center">
+                                ⚠️ Cancellation unavailable (less than 60 minutes until showtime)
+                              </p>
+                            </div>
+                          )}
+                          {booking.status === 'cancelled' && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <p className="text-sm text-red-600 text-center font-medium">
+                                ✓ This booking has been cancelled
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from .health import HealthCheckView
 from .supabase_views import SupabaseMoviesView, SupabaseMovieDetailView, SupabaseStatsView
-from .seat_views import ShowtimeSeatsView, CreateBookingView, UserBookingsView
+from .seat_views import ShowtimeSeatsView, CreateBookingView, UserBookingsView, CancelBookingView
 
 urlpatterns = [
 
@@ -47,6 +47,7 @@ urlpatterns = [
     # Admin promotion endpoints
     path('admin/promotions/', views.AdminPromotionListView.as_view(), name='admin-promotion-list'),
     path('admin/promotions/<int:promotion_id>/', views.AdminPromotionDetailView.as_view(), name='admin-promotion-detail'),
+    path('admin/promotions/<int:promotion_id>/send-email/', views.SendPromotionEmailView.as_view(), name='send-promotion-email'),
     
     # Public promotion validation endpoint
     path('promotions/validate/', views.ValidatePromotionView.as_view(), name='validate-promotion'),
@@ -55,4 +56,5 @@ urlpatterns = [
     path('showtimes/<int:showtime_id>/seats/', ShowtimeSeatsView.as_view(), name='showtime-seats'),
     path('bookings/', CreateBookingView.as_view(), name='create-booking'),
     path('bookings/user/', UserBookingsView.as_view(), name='user-bookings'),
+    path('bookings/<int:booking_id>/cancel/', CancelBookingView.as_view(), name='cancel-booking'),
 ]
