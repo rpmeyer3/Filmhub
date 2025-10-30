@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '../../components/Header'
@@ -12,10 +12,27 @@ export default function BookingPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   
+  // Store IDs in state to persist them even if searchParams changes
+  const [showtimeId, setShowtimeId] = useState(null)
+  const [movieId, setMovieId] = useState(null)
+  
   const [showtime, setShowtime] = useState(null)
   const [movie, setMovie] = useState(null)
   const [loadingShowtime, setLoadingShowtime] = useState(true)
   const [loadingMovie, setLoadingMovie] = useState(true)
+  const hasLoadedData = useRef(false)
+  
+  // Extract IDs from URL on mount and store in state
+  useEffect(() => {
+    const showtimeParam = searchParams.get('showtimeId')
+    const movieParam = searchParams.get('movieId')
+    
+    // Only set if we don't already have them and they exist in URL
+    if (showtimeParam && movieParam && (!showtimeId || !movieId)) {
+      setShowtimeId(showtimeParam)
+      setMovieId(movieParam)
+    }
+  }, [searchParams])
   
   const [tickets, setTickets] = useState({
     adult: 0,
@@ -24,6 +41,7 @@ export default function BookingPage() {
   })
   
   const [selectedSeats, setSelectedSeats] = useState([])
+  const [seatsConfirmed, setSeatsConfirmed] = useState(false)
   
   const [promoCode, setPromoCode] = useState('')
   const [promoDiscount, setPromoDiscount] = useState(0)
@@ -50,17 +68,15 @@ export default function BookingPage() {
   }
 
   useEffect(() => {
-    const showtimeId = searchParams.get('showtimeId')
-    const movieId = searchParams.get('movieId')
+    // Only fetch once when component mounts
+    if (hasLoadedData.current) return
+    if (!showtimeId || !movieId) return
     
-    if (showtimeId) {
-      fetchShowtimeDetails(showtimeId)
-    }
+    fetchShowtimeDetails(showtimeId)
+    fetchMovieDetails(movieId)
     
-    if (movieId) {
-      fetchMovieDetails(movieId)
-    }
-  }, [searchParams])
+    hasLoadedData.current = true
+  }, [showtimeId, movieId])
 
   // Fetch saved cards when user is available
   useEffect(() => {
@@ -75,13 +91,8 @@ export default function BookingPage() {
       const response = await fetch(`http://127.0.0.1:8000/api/admin/showtimes/${showtimeId}/`)
       const data = await response.json()
       
-      console.log('Showtime API response:', data)
-      
       if (data.success) {
         setShowtime(data.showtime)
-        console.log('Showtime state set:', data.showtime)
-      } else {
-        console.error('Showtime data missing success flag:', data)
       }
     } catch (error) {
       console.error('Error fetching showtime:', error)
@@ -96,14 +107,9 @@ export default function BookingPage() {
       const response = await fetch(`http://127.0.0.1:8000/api/movies/${movieId}/`)
       const data = await response.json()
       
-      console.log('Movie API response:', data)
-      
       // API returns movie data directly, not wrapped in success field
       if (data && data.id) {
         setMovie(data)
-        console.log('Movie state set:', data)
-      } else {
-        console.error('Movie data missing id:', data)
       }
     } catch (error) {
       console.error('Error fetching movie:', error)
@@ -117,6 +123,22 @@ export default function BookingPage() {
       ...prev,
       [type]: parseInt(value)
     }))
+    // Reset seat selection when ticket count changes
+    setSelectedSeats([])
+    setSeatsConfirmed(false)
+  }
+  
+  const handleSeatsSelected = useCallback((seats) => {
+    console.log('handleSeatsSelected called with:', seats.map(s => s.seat_label))
+    setSelectedSeats(seats)
+    // Reset confirmation when seats change
+    setSeatsConfirmed(false)
+  }, [])
+  
+  const handleConfirmSeats = () => {
+    if (selectedSeats.length === getTotalTickets()) {
+      setSeatsConfirmed(true)
+    }
   }
   
   const validatePromoCode = async () => {
@@ -285,10 +307,10 @@ export default function BookingPage() {
             </h1>
 
             {/* Movie and Showtime Info */}
-            {(loadingShowtime || loadingMovie) ? (
+            {(loadingShowtime || loadingMovie) && !showtime && !movie ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading booking details...</p>
+                <p className="mt-4 text-gray-600">Loading booking details... (showtime: {loadingShowtime ? 'loading' : 'done'}, movie: {loadingMovie ? 'loading' : 'done'})</p>
               </div>
             ) : showtime && movie ? (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
@@ -477,14 +499,49 @@ export default function BookingPage() {
               </div>
 
               {/* Seat Selection - Only show if tickets are selected */}
-              {getTotalTickets() > 0 && (
+              {getTotalTickets() > 0 && !seatsConfirmed && (
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Your Seats</h3>
                   <SeatMap
+                    key={`seatmap-${getTotalTickets()}`}
                     showtimeId={showtime?.id}
                     maxSeats={getTotalTickets()}
-                    onSeatsSelected={setSelectedSeats}
+                    onSeatsSelected={handleSeatsSelected}
                   />
+                  
+                  {/* Confirm Seats Button */}
+                  {selectedSeats.length === getTotalTickets() && (
+                    <div className="mt-6 flex justify-center">
+                      <button
+                        type="button"
+                        className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+                        onClick={handleConfirmSeats}
+                      >
+                        Confirm Seat Selection
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Show selected seats after confirmation */}
+              {seatsConfirmed && (
+                <div className="mt-8 bg-green-50 border-2 border-green-500 rounded-lg p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">✓ Seats Confirmed</h3>
+                      <p className="text-gray-700">
+                        <span className="font-medium">Selected Seats:</span> {selectedSeats.map(s => s.seat_label).join(', ')}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-blue-600 hover:text-blue-800 underline text-sm"
+                      onClick={() => setSeatsConfirmed(false)}
+                    >
+                      Change Seats
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -499,14 +556,14 @@ export default function BookingPage() {
                 </button>
                 <button
                   type="button"
-                  disabled={getTotalTickets() === 0 || selectedSeats.length !== getTotalTickets()}
-                  className={`flex-1 py-3 px-6 rounded-lg transition-colors font-medium ${
-                    getTotalTickets() === 0 || selectedSeats.length !== getTotalTickets()
+                  disabled={!seatsConfirmed}
+                  className={`flex-1 py-3 px-6 rounded-lg transition-colors font-medium text-lg ${
+                    !seatsConfirmed
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-red-600 text-white hover:bg-red-700'
                   }`}
                   onClick={() => {
-                    if (getTotalTickets() > 0 && selectedSeats.length === getTotalTickets()) {
+                    if (seatsConfirmed) {
                       alert(`Ready to complete booking!\n\nMovie: ${movie.title}\nSeats: ${selectedSeats.map(s => s.seat_label).join(', ')}\nTotal: $${calculateTotal().toFixed(2)}`)
                     }
                   }}

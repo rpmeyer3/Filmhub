@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
@@ -18,9 +18,11 @@ export default function Login() {
   const router = useRouter()
 
   // Redirect if already logged in
-  if (user) {
-    router.push('/')
-  }
+  useEffect(() => {
+    if (user) {
+      router.push('/')
+    }
+  }, [user, router])
 
   const validateForm = () => {
     const newErrors = {}
