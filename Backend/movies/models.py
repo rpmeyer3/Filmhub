@@ -213,6 +213,30 @@ class MovieReview(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.movie.title} ({self.rating}/5)"
- 
+
+
+# Model for Promotions/Promo Codes
+class Promotion(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'promotions'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_percentage}% off)"
+    
+    def is_valid(self):
+        from datetime import date
+        today = date.today()
+        return self.is_active and self.start_date <= today <= self.end_date
+
+
 
 

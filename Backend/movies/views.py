@@ -800,3 +800,215 @@ class AdminMovieShowDetailView(APIView):
                 {'error': f'Failed to delete showtime: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AdminPromotionListView(APIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT id, code, discount_percentage, start_date, end_date, is_active, created_at, updated_at
+                    FROM promotions
+                    ORDER BY created_at DESC
+                ''')
+                
+                columns = [col[0] for col in cursor.description]
+                promotions = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                
+                return Response({
+                    'success': True,
+                    'promotions': promotions,
+                    'count': len(promotions)
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch promotions: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def post(self, request):
+        try:
+            data = request.data
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    INSERT INTO promotions (code, discount_percentage, start_date, end_date, is_active)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id, code, discount_percentage, start_date, end_date, is_active, created_at, updated_at
+                ''', [
+                    data.get('code'),
+                    data.get('discount_percentage'),
+                    data.get('start_date'),
+                    data.get('end_date'),
+                    data.get('is_active', True)
+                ])
+                
+                columns = [col[0] for col in cursor.description]
+                promotion = dict(zip(columns, cursor.fetchone()))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Promotion created successfully',
+                    'promotion': promotion
+                }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create promotion: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AdminPromotionDetailView(APIView):
+    def get(self, request, promotion_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT id, code, discount_percentage, start_date, end_date, is_active, created_at, updated_at
+                    FROM promotions
+                    WHERE id = %s
+                ''', [promotion_id])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Promotion not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                promotion = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'promotion': promotion
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch promotion: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def put(self, request, promotion_id):
+        try:
+            data = request.data
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    UPDATE promotions
+                    SET code = %s, discount_percentage = %s, start_date = %s, end_date = %s, is_active = %s
+                    WHERE id = %s
+                    RETURNING id, code, discount_percentage, start_date, end_date, is_active, created_at, updated_at
+                ''', [
+                    data.get('code'),
+                    data.get('discount_percentage'),
+                    data.get('start_date'),
+                    data.get('end_date'),
+                    data.get('is_active'),
+                    promotion_id
+                ])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response(
+                        {'error': 'Promotion not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                columns = [col[0] for col in cursor.description]
+                promotion = dict(zip(columns, row))
+                
+                return Response({
+                    'success': True,
+                    'message': 'Promotion updated successfully',
+                    'promotion': promotion
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to update promotion: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, promotion_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM promotions WHERE id = %s', [promotion_id])
+                
+                if cursor.rowcount == 0:
+                    return Response(
+                        {'error': 'Promotion not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                
+                return Response({
+                    'success': True,
+                    'message': 'Promotion deleted successfully'
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to delete promotion: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ValidatePromotionView(APIView):
+    def post(self, request):
+        try:
+            code = request.data.get('code')
+            
+            if not code:
+                return Response(
+                    {'error': 'Promotion code is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT id, code, discount_percentage, start_date, end_date, is_active
+                    FROM promotions
+                    WHERE UPPER(code) = UPPER(%s) AND is_active = TRUE
+                ''', [code])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return Response({
+                        'valid': False,
+                        'error': 'Invalid or inactive promotion code'
+                    }, status=status.HTTP_200_OK)
+                
+                columns = [col[0] for col in cursor.description]
+                promotion = dict(zip(columns, row))
+                
+                # Check date validity
+                from datetime import date
+                today = date.today()
+                start_date = promotion['start_date']
+                end_date = promotion['end_date']
+                
+                if today < start_date:
+                    return Response({
+                        'valid': False,
+                        'error': f'Promotion starts on {start_date}'
+                    }, status=status.HTTP_200_OK)
+                
+                if today > end_date:
+                    return Response({
+                        'valid': False,
+                        'error': f'Promotion expired on {end_date}'
+                    }, status=status.HTTP_200_OK)
+                
+                return Response({
+                    'valid': True,
+                    'promotion': promotion,
+                    'discount_percentage': float(promotion['discount_percentage'])
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to validate promotion: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

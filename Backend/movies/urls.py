@@ -41,4 +41,11 @@ urlpatterns = [
     # Admin showtime/scheduling endpoints
     path('admin/showtimes/', views.AdminMovieShowListView.as_view(), name='admin-showtime-list'),
     path('admin/showtimes/<int:showtime_id>/', views.AdminMovieShowDetailView.as_view(), name='admin-showtime-detail'),
+    
+    # Admin promotion endpoints
+    path('admin/promotions/', views.AdminPromotionListView.as_view(), name='admin-promotion-list'),
+    path('admin/promotions/<int:promotion_id>/', views.AdminPromotionDetailView.as_view(), name='admin-promotion-detail'),
+    
+    # Public promotion validation endpoint
+    path('promotions/validate/', views.ValidatePromotionView.as_view(), name='validate-promotion'),
 ]
