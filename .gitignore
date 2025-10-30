@@ -1,3 +1,5 @@
+.env
+
 # Mac files
 .DS_Store
 .AppleDouble

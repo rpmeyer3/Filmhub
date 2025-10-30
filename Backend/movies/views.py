@@ -1022,6 +1022,9 @@ class SendPromotionEmailView(APIView):
                 resend_api_key = os.getenv('RESEND_API_KEY')
                 use_resend = resend_api_key and resend_api_key != 'your-resend-api-key-here'
                 
+                # For demo purposes, send all test emails to the verified Resend account email
+                RESEND_VERIFIED_EMAIL = "rpmeyer3@outlook.com"
+                
                 if use_resend:
                     import resend
                     resend.api_key = resend_api_key
@@ -1052,7 +1055,7 @@ class SendPromotionEmailView(APIView):
                         <body>
                             <div class="container">
                                 <div class="header">
-                                    <h1>🎬 Film-Hub Special Offer!</h1>
+                                    <h1>Film-Hub Special Offer!</h1>
                                 </div>
                                 <div class="content">
                                     <p>Hello {first_name},</p>
@@ -1109,16 +1112,36 @@ To unsubscribe from promotional emails, please visit your profile settings.
                         '''
                         
                         if use_resend:
-                            # Send real email via Resend
-                            params = {
-                                "from": "Film-Hub <onboarding@resend.dev>",  # Free Resend test domain (works without verification)
-                                "to": [user_email],
-                                "subject": subject,
-                                "html": html_message,
-                                "text": text_message,
-                            }
-                            resend.Emails.send(params)
-                            print(f"✓ Sent email to {user_email} via Resend")
+                            # Send real email via Resend (to verified email for testing)
+                            try:
+                                # Add note in subject that this is a test email for the actual recipient
+                                test_subject = f"[TEST for {user_email}] {subject}"
+                                
+                                # Add recipient info to the email body
+                                test_html = html_message.replace(
+                                    f"<p>Hello {first_name},</p>",
+                                    f"<p><strong>TEST EMAIL - Intended for: {user_email}</strong></p><p>Hello {first_name},</p>"
+                                )
+                                
+                                params = {
+                                    "from": "Film-Hub <onboarding@resend.dev>",  # Free Resend test domain
+                                    "to": [RESEND_VERIFIED_EMAIL],  # Send to verified email only
+                                    "subject": test_subject,
+                                    "html": test_html,
+                                    "text": f"[TEST for {user_email}]\n\n{text_message}",
+                                }
+                                resend.Emails.send(params)
+                                print(f"✓ Sent test email to {RESEND_VERIFIED_EMAIL} (for user: {user_email}) via Resend")
+                            except Exception as resend_error:
+                                # If Resend fails, fall back to console
+                                print(f"⚠️ Resend failed ({str(resend_error)}), falling back to console mode")
+                                print(f"\n{'='*60}")
+                                print(f"PROMOTIONAL EMAIL (Console Mode)")
+                                print(f"{'='*60}")
+                                print(f"To: {user_email}")
+                                print(f"Subject: {subject}")
+                                print(f"\n{text_message}")
+                                print(f"{'='*60}\n")
                         else:
                             # Fallback to console output for development
                             print(f"\n{'='*60}")
@@ -1132,8 +1155,13 @@ To unsubscribe from promotional emails, please visit your profile settings.
                         emails_sent += 1
                         
                     except Exception as email_error:
-                        print(f"Failed to send email to {user_email}: {str(email_error)}")
-                        failed_emails.append(user_email if 'user_email' in locals() else 'unknown')
+                        import traceback
+                        error_details = f"{str(email_error)} - {traceback.format_exc()}"
+                        print(f"Failed to send email to {user_email}: {error_details}")
+                        failed_emails.append({
+                            'email': user_email if 'user_email' in locals() else 'unknown',
+                            'error': str(email_error)
+                        })
                 
                 return Response({
                     'success': True,
