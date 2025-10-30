@@ -41,7 +41,6 @@ export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
   }
 
   const handleSeatClick = (seat) => {
-    console.log('Seat clicked:', seat.seat_label)
     if (!seat.is_available) return
 
     const isSelected = selectedSeats.find(s => s.id === seat.id)
@@ -49,14 +48,12 @@ export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
     if (isSelected) {
       // Deselect seat
       const newSelection = selectedSeats.filter(s => s.id !== seat.id)
-      console.log('Deselecting seat, new selection:', newSelection.map(s => s.seat_label))
       setSelectedSeats(newSelection)
       onSeatsSelected(newSelection)
     } else {
       // Select seat (if under max limit)
       if (selectedSeats.length < maxSeats) {
         const newSelection = [...selectedSeats, seat]
-        console.log('Selecting seat, new selection:', newSelection.map(s => s.seat_label))
         setSelectedSeats(newSelection)
         onSeatsSelected(newSelection)
       }

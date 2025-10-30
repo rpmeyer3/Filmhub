@@ -129,7 +129,6 @@ export default function BookingPage() {
   }
   
   const handleSeatsSelected = useCallback((seats) => {
-    console.log('handleSeatsSelected called with:', seats.map(s => s.seat_label))
     setSelectedSeats(seats)
     // Reset confirmation when seats change
     setSeatsConfirmed(false)
@@ -279,6 +278,58 @@ export default function BookingPage() {
       }
     } catch (error) {
       alert('Failed to add card. Please try again.')
+    }
+  }
+
+  const handleCompleteBooking = async () => {
+    if (!user) {
+      alert('Please sign in to complete your booking')
+      router.push('/login')
+      return
+    }
+
+    if (!seatsConfirmed || selectedSeats.length === 0) {
+      alert('Please select and confirm your seats first')
+      return
+    }
+
+    if (!selectedCardId && savedCards.length > 0) {
+      alert('Please select a payment card')
+      return
+    }
+
+    try {
+      const bookingData = {
+        user_id: user.id,
+        user_email: user.email,
+        showtime_id: showtimeId,
+        seat_ids: selectedSeats.map(s => s.id),
+        num_adult_tickets: tickets.adult,
+        num_child_tickets: tickets.child,
+        num_senior_tickets: tickets.senior,
+        total_amount: calculateTotal(),
+        payment_card_id: selectedCardId || null
+      }
+
+      const response = await fetch('http://127.0.0.1:8000/api/bookings/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData)
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`Booking Confirmed!\n\nBooking Number: ${data.booking_number}\n\nA confirmation email has been sent to ${user.email}`)
+        router.push('/')
+      } else {
+        alert(`Booking failed: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error completing booking:', error)
+      alert('Failed to complete booking. Please try again.')
     }
   }
 
@@ -562,11 +613,7 @@ export default function BookingPage() {
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-red-600 text-white hover:bg-red-700'
                   }`}
-                  onClick={() => {
-                    if (seatsConfirmed) {
-                      alert(`Ready to complete booking!\n\nMovie: ${movie.title}\nSeats: ${selectedSeats.map(s => s.seat_label).join(', ')}\nTotal: $${calculateTotal().toFixed(2)}`)
-                    }
-                  }}
+                  onClick={handleCompleteBooking}
                 >
                   Complete Booking →
                 </button>

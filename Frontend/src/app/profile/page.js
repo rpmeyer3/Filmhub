@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
+import Header from '../../components/Header'
 
 export default function Profile() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,9 @@ export default function Profile() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [bookings, setBookings] = useState([])
+  const [loadingBookings, setLoadingBookings] = useState(true)
+  const [activeTab, setActiveTab] = useState('profile') // 'profile' or 'bookings'
 
   const { user, updateProfile, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -34,8 +38,45 @@ export default function Profile() {
         email: user.email || '',
         receivePromotions: user.user_metadata?.receive_promotions || false
       })
+      fetchBookings()
     }
   }, [user])
+
+  const fetchBookings = async () => {
+    if (!user) return
+    
+    try {
+      setLoadingBookings(true)
+      console.log('Fetching bookings for user:', user.id)
+      const response = await fetch(`http://127.0.0.1:8000/api/bookings/user/?user_id=${user.id}`)
+      const data = await response.json()
+      console.log('Bookings response:', data)
+      
+      if (data.success) {
+        setBookings(data.bookings)
+      } else {
+        console.error('Bookings fetch failed:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error)
+    } finally {
+      setLoadingBookings(false)
+    }
+  }
+
+  const formatDateTime = (isoString) => {
+    if (!isoString) return 'N/A'
+    const date = new Date(isoString)
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -97,13 +138,46 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-              Profile Settings
-            </h3>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Tabs */}
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`${
+                    activeTab === 'profile'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                >
+                  Profile Settings
+                </button>
+                <button
+                  onClick={() => setActiveTab('bookings')}
+                  className={`${
+                    activeTab === 'bookings'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                >
+                  My Bookings ({bookings.length})
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {/* Profile Settings Tab */}
+          {activeTab === 'profile' && (
+            <div className="max-w-md mx-auto">
+              <div className="bg-white shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
+                    Profile Settings
+                  </h3>
 
             {message && (
               <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
@@ -206,7 +280,102 @@ export default function Profile() {
                 </button>
               </div>
             </form>
-          </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* My Bookings Tab */}
+          {activeTab === 'bookings' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">My Bookings</h2>
+              
+              {loadingBookings ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading your bookings...</p>
+                </div>
+              ) : bookings.length === 0 ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                  <p className="text-gray-600 text-lg">You haven't made any bookings yet.</p>
+                  <button
+                    onClick={() => router.push('/')}
+                    className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    Browse Movies
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {bookings.map((booking) => (
+                    <div key={booking.id} className="bg-white rounded-lg shadow overflow-hidden">
+                      <div className="md:flex">
+                        {/* Movie Poster */}
+                        <div className="md:flex-shrink-0">
+                          <img
+                            className="h-48 w-full object-cover md:w-48"
+                            src={booking.poster_url || '/placeholder-movie.jpg'}
+                            alt={booking.movie_title}
+                          />
+                        </div>
+                        
+                        {/* Booking Details */}
+                        <div className="p-6 flex-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">{booking.movie_title}</h3>
+                              <p className="mt-1 text-sm text-gray-600">Booking #{booking.booking_number}</p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              booking.status === 'confirmed' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {booking.status}
+                            </span>
+                          </div>
+                          
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-600">Showtime</p>
+                              <p className="font-medium">{formatDateTime(booking.showtime)}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Theater</p>
+                              <p className="font-medium">{booking.showroom_name}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Seats</p>
+                              <p className="font-medium">{booking.seats}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Tickets</p>
+                              <p className="font-medium">
+                                {booking.num_adult_tickets > 0 && `${booking.num_adult_tickets} Adult`}
+                                {booking.num_child_tickets > 0 && `, ${booking.num_child_tickets} Child`}
+                                {booking.num_senior_tickets > 0 && `, ${booking.num_senior_tickets} Senior`}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                              <p className="text-sm text-gray-600">Booked on</p>
+                              <p className="font-medium">{formatDateTime(booking.booking_date)}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-600">Total Amount</p>
+                              <p className="text-2xl font-bold text-indigo-600">${booking.total_amount.toFixed(2)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

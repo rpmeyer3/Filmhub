@@ -4,6 +4,94 @@ from rest_framework.views import APIView
 from django.db import connection
 
 
+class UserBookingsView(APIView):
+    """Get all bookings for a specific user"""
+    def get(self, request):
+        try:
+            user_id = request.query_params.get('user_id')
+            
+            if not user_id:
+                return Response(
+                    {'error': 'user_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            with connection.cursor() as cursor:
+                # Get all bookings for this user with simplified query
+                cursor.execute('''
+                    SELECT 
+                        b.id,
+                        b.booking_number,
+                        b.booking_date,
+                        b.total_amount,
+                        b.num_adult_tickets,
+                        b.num_child_tickets,
+                        b.num_senior_tickets,
+                        b.status,
+                        sht.showtime,
+                        sht.movie_id,
+                        string_agg(DISTINCT s.seat_row || s.seat_number, ', ' ORDER BY s.seat_row || s.seat_number) as seats
+                    FROM bookings b
+                    JOIN booking_seats bs ON b.id = bs.booking_id
+                    JOIN seats s ON bs.seat_id = s.id
+                    JOIN showtimes sht ON b.showtime_id = sht.id
+                    WHERE b.user_id = %s
+                    GROUP BY b.id, b.booking_number, b.booking_date, b.total_amount,
+                             b.num_adult_tickets, b.num_child_tickets, b.num_senior_tickets,
+                             b.status, sht.showtime, sht.movie_id, sht.showroom_id
+                    ORDER BY b.booking_date DESC
+                ''', [user_id])
+                
+                bookings_raw = cursor.fetchall()
+                
+                # Now fetch movie and showroom details separately
+                bookings = []
+                for row in bookings_raw:
+                    booking_id, booking_number, booking_date, total_amount, num_adult, num_child, num_senior, booking_status, showtime, movie_id, seats = row
+                    
+                    # Get movie details
+                    cursor.execute('SELECT "Title", "Poster_img_URL" FROM "Movies" WHERE id = %s', [movie_id])
+                    movie_data = cursor.fetchone()
+                    movie_title = movie_data[0] if movie_data else 'Unknown Movie'
+                    poster_url = movie_data[1] if movie_data else None
+                    
+                    # Get showroom details from showtime
+                    cursor.execute('SELECT sr.name FROM showtimes sht JOIN showrooms sr ON sht.showroom_id = sr.id WHERE sht.id IN (SELECT showtime_id FROM bookings WHERE id = %s)', [booking_id])
+                    showroom_data = cursor.fetchone()
+                    showroom_name = showroom_data[0] if showroom_data else 'Unknown Theater'
+                    
+                    bookings.append({
+                        'id': str(booking_id),
+                        'booking_number': booking_number,
+                        'booking_date': booking_date.isoformat() if booking_date else None,
+                        'total_amount': float(total_amount),
+                        'num_adult_tickets': num_adult,
+                        'num_child_tickets': num_child,
+                        'num_senior_tickets': num_senior,
+                        'status': booking_status,
+                        'movie_title': movie_title,
+                        'poster_url': poster_url,
+                        'showtime': showtime.isoformat() if showtime else None,
+                        'showroom_name': showroom_name,
+                        'seats': seats
+                    })
+                
+                return Response({
+                    'success': True,
+                    'bookings': bookings,
+                    'count': len(bookings)
+                }, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            import traceback
+            print(f"Error fetching bookings: {str(e)}")
+            print(traceback.format_exc())
+            return Response(
+                {'error': f'Failed to fetch bookings: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class ShowtimeSeatsView(APIView):
     """Get all seats for a specific showtime with availability status"""
     def get(self, request, showtime_id):
@@ -85,87 +173,161 @@ class CreateBookingView(APIView):
     """Create a booking with selected seats"""
     def post(self, request):
         try:
+            import uuid
+            from datetime import datetime
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
             data = request.data
+            print("Received booking data:", data)  # Debug
+            
             user_id = data.get('user_id')
+            user_email = data.get('user_email')
             showtime_id = data.get('showtime_id')
-            movie_id = data.get('movie_id')
             seat_ids = data.get('seat_ids', [])
-            ticket_types = data.get('ticket_types', {})  # {seat_id: ticket_type}
-            promotion_code = data.get('promotion_code')
-            discount_amount = data.get('discount_amount', 0)
-            subtotal = data.get('subtotal')
-            total_price = data.get('total_price')
+            num_adult = data.get('num_adult_tickets', 0)
+            num_child = data.get('num_child_tickets', 0)
+            num_senior = data.get('num_senior_tickets', 0)
+            total_amount = data.get('total_amount')
             payment_card_id = data.get('payment_card_id')
             
-            if not all([user_id, showtime_id, movie_id, seat_ids, subtotal, total_price]):
+            if not all([user_id, showtime_id, seat_ids, total_amount]):
                 return Response(
                     {'error': 'Missing required fields'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
             with connection.cursor() as cursor:
-                # Check if all seats are available
+                # Get showtime details from showtime_table
+                cursor.execute('''
+                    SELECT movie_id, showroom_id, showtime, price 
+                    FROM showtime_table 
+                    WHERE id = %s
+                ''', [showtime_id])
+                showtime_data = cursor.fetchone()
+                if not showtime_data:
+                    return Response(
+                        {'error': 'Showtime not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                movie_id_int, showroom_uuid, showtime_dt, price = showtime_data
+                
+                # Check if a corresponding record exists in the UUID-based showtimes table
+                cursor.execute('''
+                    SELECT id FROM showtimes 
+                    WHERE movie_id = %s AND showroom_id = %s AND showtime = %s
+                ''', [movie_id_int, showroom_uuid, showtime_dt])
+                
+                existing_showtime = cursor.fetchone()
+                if existing_showtime:
+                    showtime_uuid = existing_showtime[0]
+                else:
+                    # Create a new record in showtimes table to satisfy foreign key
+                    showtime_uuid = uuid.uuid4()
+                    cursor.execute('''
+                        INSERT INTO showtimes (
+                            id, movie_id, showroom_id, showtime,
+                            ticket_price_adult, ticket_price_child, ticket_price_senior,
+                            available_seats, is_available
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', [
+                        showtime_uuid, movie_id_int, showroom_uuid, showtime_dt,
+                        12.00, 8.00, 10.00,  # Default pricing
+                        100, True  # Default availability
+                    ])
+                
+                # Check if seats are still available
                 placeholders = ','.join(['%s'] * len(seat_ids))
                 cursor.execute(f'''
-                    SELECT id, seat_label, is_available
-                    FROM seats
-                    WHERE id IN ({placeholders}) AND showtime_id = %s
-                ''', seat_ids + [showtime_id])
+                    SELECT bs.seat_id
+                    FROM booking_seats bs
+                    WHERE bs.seat_id IN ({placeholders})
+                ''', seat_ids)
                 
-                seats = cursor.fetchall()
-                unavailable_seats = [seat[1] for seat in seats if not seat[2]]
-                
-                if unavailable_seats:
+                already_booked = cursor.fetchall()
+                if already_booked:
                     return Response(
-                        {
-                            'error': f'Seats no longer available: {", ".join(unavailable_seats)}'
-                        },
+                        {'error': 'One or more seats are no longer available'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
+                # Generate booking number with actual showtime ID embedded
+                booking_number = f"BK{datetime.now().strftime('%Y%m%d')}{str(showtime_id).zfill(4)}{uuid.uuid4().hex[:4].upper()}"
+                
                 # Create booking
+                booking_id = uuid.uuid4()
+                
+                # Payment card ID schema mismatch: payment_cards table uses integer IDs
+                # but bookings table expects UUID. For now, we'll set to NULL.
+                # In production, this would need schema alignment.
+                payment_card_uuid = None
+                
                 cursor.execute('''
                     INSERT INTO bookings (
-                        user_id, showtime_id, movie_id, promotion_code,
-                        discount_amount, subtotal, total_price, payment_card_id
+                        id, user_id, showtime_id, payment_card_id, booking_number,
+                        total_amount, num_adult_tickets, num_child_tickets, 
+                        num_senior_tickets, status, booking_date
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', [
-                    user_id, showtime_id, movie_id, promotion_code,
-                    discount_amount, subtotal, total_price, payment_card_id
+                    booking_id, user_id, showtime_uuid, payment_card_uuid, booking_number,
+                    total_amount, num_adult, num_child, num_senior, 'confirmed', datetime.now()
                 ])
                 
-                booking_id = cursor.fetchone()[0]
-                
-                # Mark seats as unavailable
-                cursor.execute(f'''
-                    UPDATE seats
-                    SET is_available = FALSE
-                    WHERE id IN ({placeholders})
-                ''', seat_ids)
-                
                 # Create booking_seats records
-                booking_seats_data = []
-                pricing = {'adult': 12.00, 'child': 8.00, 'senior': 10.00}
-                
                 for seat_id in seat_ids:
-                    ticket_type = ticket_types.get(str(seat_id), 'adult')
-                    price = pricing.get(ticket_type, 12.00)
-                    booking_seats_data.append((booking_id, seat_id, ticket_type, price))
+                    cursor.execute('''
+                        INSERT INTO booking_seats (id, booking_id, seat_id, showtime_id)
+                        VALUES (%s, %s, %s, %s)
+                    ''', [uuid.uuid4(), booking_id, seat_id, showtime_uuid])
                 
-                cursor.executemany('''
-                    INSERT INTO booking_seats (booking_id, seat_id, ticket_type, price)
-                    VALUES (%s, %s, %s, %s)
-                ''', booking_seats_data)
+                # Email confirmation (optional - don't fail booking if this fails)
+                try:
+                    if user_email:
+                        email_subject = f'Booking Confirmation - {booking_number}'
+                        email_body = f'''
+Dear Customer,
+
+Your booking has been confirmed!
+
+Booking Number: {booking_number}
+
+Tickets:
+- Adult: {num_adult}
+- Child: {num_child}
+- Senior: {num_senior}
+
+Total Amount: ${total_amount}
+
+Please arrive 15 minutes before the show time.
+
+Thank you for choosing our cinema!
+'''
+                        
+                        send_mail(
+                            subject=email_subject,
+                            message=email_body,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[user_email],
+                            fail_silently=True,
+                        )
+                        print(f"Confirmation email sent to {user_email}")
+                except Exception as email_error:
+                    print(f"Email send failed (non-critical): {str(email_error)}")
+                    # Don't fail the booking if email fails
                 
                 return Response({
                     'success': True,
-                    'booking_id': booking_id,
+                    'booking_id': str(booking_id),
+                    'booking_number': booking_number,
                     'message': 'Booking created successfully'
                 }, status=status.HTTP_201_CREATED)
                 
         except Exception as e:
+            import traceback
+            print(f"Error creating booking: {str(e)}")
+            print(traceback.format_exc())
             return Response(
                 {'error': f'Failed to create booking: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
