@@ -11,6 +11,7 @@ urlpatterns = [
     # Main movie endpoints - now using only Supabase Movies table
     path('movies/', views.MovieListView.as_view(), name='movie-list'),  # All movies from Supabase only
     path('movies/<int:movie_id>/', views.MovieDetailView.as_view(), name='movie-detail'),  # Single movie detail
+    path('movies/<int:movie_id>/showtimes/', views.MovieShowtimesView.as_view(), name='movie-showtimes'),  # Get showtimes for a movie
     path('movies/search/<str:query>/', views.MovieSearchView.as_view(), name='movie-search'),  # Search in Supabase only
     
     # Alternative endpoints with full relationships (legacy)

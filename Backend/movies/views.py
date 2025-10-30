@@ -1012,3 +1012,41 @@ class ValidatePromotionView(APIView):
                 {'error': f'Failed to validate promotion: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class MovieShowtimesView(APIView):
+    def get(self, request, movie_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    SELECT 
+                        st.id,
+                        st.movie_id,
+                        st.showroom_id,
+                        st.showtime,
+                        st.price,
+                        st.is_now_showing,
+                        sr.name as showroom_name,
+                        sr.capacity,
+                        sr.rows,
+                        sr.seats_per_row
+                    FROM showtime_table st
+                    JOIN showrooms sr ON st.showroom_id = sr.id
+                    WHERE st.movie_id = %s AND st.showtime >= NOW()
+                    ORDER BY st.showtime ASC
+                ''', [movie_id])
+                
+                columns = [col[0] for col in cursor.description]
+                showtimes = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                
+                return Response({
+                    'success': True,
+                    'showtimes': showtimes,
+                    'count': len(showtimes)
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch showtimes: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

@@ -11,14 +11,14 @@ export default function MovieDetails() {
   const params = useParams()
   const { movieId } = params
   const [movie, setMovie] = useState(null)
+  const [showtimes, setShowtimes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  const showTimes = ['2:00 PM', '5:00 PM', '8:00 PM']
 
   useEffect(() => {
     if (movieId) {
       fetchMovieDetails()
+      fetchShowtimes()
     }
   }, [movieId])
 
@@ -35,8 +35,47 @@ export default function MovieDetails() {
     }
   }
 
+  const fetchShowtimes = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/movies/${movieId}/showtimes/`)
+      const data = await response.json()
+      if (data.success) {
+        setShowtimes(data.showtimes)
+      }
+    } catch (err) {
+      console.error('Error fetching showtimes:', err)
+    }
+  }
+
+  const formatShowtime = (datetimeString) => {
+    const date = new Date(datetimeString)
+    const dateStr = date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    })
+    return { dateStr, timeStr, fullDate: date }
+  }
+
+  const groupShowtimesByDate = () => {
+    const grouped = {}
+    showtimes.forEach(showtime => {
+      const { dateStr } = formatShowtime(showtime.showtime)
+      if (!grouped[dateStr]) {
+        grouped[dateStr] = []
+      }
+      grouped[dateStr].push(showtime)
+    })
+    return grouped
+  }
+
   const handleShowtimeClick = (showtime) => {
-    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&movieId=${movie.id}&showtime=${encodeURIComponent(showtime)}`
+    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&movieId=${movie.id}&showtimeId=${showtime.id}&showtime=${encodeURIComponent(showtime.showtime)}`
   }
 
   const getTrailerUrl = () => {
@@ -182,17 +221,35 @@ export default function MovieDetails() {
               {movie.is_running && !movie.is_coming_soon && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-3">Available Showtimes:</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {showTimes.map((time) => (
-                      <button
-                        key={time}
-                        onClick={() => handleShowtimeClick(time)}
-                        className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                      >
-                        {time}
-                      </button>
-                    ))}
-                  </div>
+                  {showtimes.length === 0 ? (
+                    <div className="bg-gray-100 text-gray-600 px-6 py-4 rounded-lg text-center">
+                      No showtimes available at the moment. Please check back later.
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {Object.entries(groupShowtimesByDate()).map(([dateStr, dateShowtimes]) => (
+                        <div key={dateStr}>
+                          <h4 className="text-lg font-semibold text-gray-800 mb-3">{dateStr}</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {dateShowtimes.map((showtime) => {
+                              const { timeStr } = formatShowtime(showtime.showtime)
+                              return (
+                                <button
+                                  key={showtime.id}
+                                  onClick={() => handleShowtimeClick(showtime)}
+                                  className="bg-white border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-3 rounded-lg transition-colors font-medium shadow-sm"
+                                >
+                                  <div className="text-lg font-bold">{timeStr}</div>
+                                  <div className="text-sm opacity-90">{showtime.showroom_name}</div>
+                                  <div className="text-sm font-semibold mt-1">${parseFloat(showtime.price).toFixed(2)}</div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

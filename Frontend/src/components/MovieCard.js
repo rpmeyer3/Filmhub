@@ -3,12 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8:00 PM'] }) {
-  const handleShowtimeClick = (showtime, e) => {
-    e.preventDefault();
-    // Navigate to booking page with movie and showtime
-    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&movieId=${movie.id}&showtime=${encodeURIComponent(showtime)}`;
-  };
+export default function MovieCard({ movie }) {
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
@@ -59,25 +54,19 @@ export default function MovieCard({ movie, showTimes = ['2:00 PM', '5:00 PM', '8
           </p>
         )}
 
-        {/* Showtimes only show for currently running movies */}
+        {/* Now Playing Badge */}
         {movie.is_running && !movie.is_coming_soon && (
           <div className="border-t pt-3">
-            <p className="text-sm font-semibold text-gray-800 mb-2">Showtimes:</p>
-            <div className="flex flex-wrap gap-2">
-              {showTimes.map((time) => (
-                <button
-                  key={time}
-                  onClick={(e) => handleShowtimeClick(time, e)}
-                  className="bg-red-600 text-white text-xs px-3 py-1 rounded hover:bg-red-700 transition-colors"
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
+            <Link 
+              href={`/movie/${movie.id}`}
+              className="block bg-red-600 text-white text-sm px-4 py-2 rounded text-center font-semibold hover:bg-red-700 transition-colors"
+            >
+              View Showtimes
+            </Link>
           </div>
         )}
 
-        {/* Coming Soon!!!!!!! */}
+        {/* Coming Soon Badge */}
         {movie.is_coming_soon && (
           <div className="border-t pt-3">
             <div className="bg-blue-100 text-blue-800 text-sm px-3 py-2 rounded text-center font-semibold">
