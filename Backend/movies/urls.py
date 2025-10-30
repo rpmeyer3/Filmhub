@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .health import HealthCheckView
 from .supabase_views import SupabaseMoviesView, SupabaseMovieDetailView, SupabaseStatsView
+from .seat_views import ShowtimeSeatsView, CreateBookingView
 
 urlpatterns = [
 
@@ -49,4 +50,8 @@ urlpatterns = [
     
     # Public promotion validation endpoint
     path('promotions/validate/', views.ValidatePromotionView.as_view(), name='validate-promotion'),
+    
+    # Seat selection and booking endpoints
+    path('showtimes/<int:showtime_id>/seats/', ShowtimeSeatsView.as_view(), name='showtime-seats'),
+    path('bookings/', CreateBookingView.as_view(), name='create-booking'),
 ]

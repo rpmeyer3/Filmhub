@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Header from '../../components/Header'
+import SeatMap from '../../components/SeatMap'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function BookingPage() {
@@ -11,11 +12,24 @@ export default function BookingPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   
-  const [bookingInfo, setBookingInfo] = useState({
-    movie: '',
-    showtime: '',
-    movieId: ''
+  const [showtime, setShowtime] = useState(null)
+  const [movie, setMovie] = useState(null)
+  const [loadingShowtime, setLoadingShowtime] = useState(true)
+  const [loadingMovie, setLoadingMovie] = useState(true)
+  
+  const [tickets, setTickets] = useState({
+    adult: 0,
+    child: 0,
+    senior: 0
   })
+  
+  const [selectedSeats, setSelectedSeats] = useState([])
+  
+  const [promoCode, setPromoCode] = useState('')
+  const [promoDiscount, setPromoDiscount] = useState(0)
+  const [promoError, setPromoError] = useState('')
+  const [promoSuccess, setPromoSuccess] = useState(false)
+  
   const [savedCards, setSavedCards] = useState([])
   const [selectedCardId, setSelectedCardId] = useState('')
   const [showNewCardForm, setShowNewCardForm] = useState(false)
@@ -27,13 +41,25 @@ export default function BookingPage() {
     expirationYear: '',
     cvv: ''
   })
+  
+  // Pricing constants (can be adjusted)
+  const PRICING = {
+    adult: 12.00,
+    child: 8.00,
+    senior: 10.00
+  }
 
   useEffect(() => {
-    const movie = searchParams.get('movie') || ''
-    const showtime = searchParams.get('showtime') || ''
-    const movieId = searchParams.get('movieId') || ''
+    const showtimeId = searchParams.get('showtimeId')
+    const movieId = searchParams.get('movieId')
     
-    setBookingInfo({ movie, showtime, movieId })
+    if (showtimeId) {
+      fetchShowtimeDetails(showtimeId)
+    }
+    
+    if (movieId) {
+      fetchMovieDetails(movieId)
+    }
   }, [searchParams])
 
   // Fetch saved cards when user is available
@@ -42,6 +68,121 @@ export default function BookingPage() {
       fetchSavedCards()
     }
   }, [user])
+  
+  const fetchShowtimeDetails = async (showtimeId) => {
+    try {
+      setLoadingShowtime(true)
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/showtimes/${showtimeId}/`)
+      const data = await response.json()
+      
+      console.log('Showtime API response:', data)
+      
+      if (data.success) {
+        setShowtime(data.showtime)
+        console.log('Showtime state set:', data.showtime)
+      } else {
+        console.error('Showtime data missing success flag:', data)
+      }
+    } catch (error) {
+      console.error('Error fetching showtime:', error)
+    } finally {
+      setLoadingShowtime(false)
+    }
+  }
+  
+  const fetchMovieDetails = async (movieId) => {
+    try {
+      setLoadingMovie(true)
+      const response = await fetch(`http://127.0.0.1:8000/api/movies/${movieId}/`)
+      const data = await response.json()
+      
+      console.log('Movie API response:', data)
+      
+      // API returns movie data directly, not wrapped in success field
+      if (data && data.id) {
+        setMovie(data)
+        console.log('Movie state set:', data)
+      } else {
+        console.error('Movie data missing id:', data)
+      }
+    } catch (error) {
+      console.error('Error fetching movie:', error)
+    } finally {
+      setLoadingMovie(false)
+    }
+  }
+  
+  const handleTicketChange = (type, value) => {
+    setTickets(prev => ({
+      ...prev,
+      [type]: parseInt(value)
+    }))
+  }
+  
+  const validatePromoCode = async () => {
+    if (!promoCode.trim()) {
+      setPromoError('Please enter a promo code')
+      return
+    }
+    
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/promotions/validate/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: promoCode })
+      })
+      
+      const data = await response.json()
+      
+      if (data.valid) {
+        setPromoDiscount(data.discount_percentage)
+        setPromoSuccess(true)
+        setPromoError('')
+      } else {
+        setPromoError(data.error || 'Invalid promo code')
+        setPromoSuccess(false)
+        setPromoDiscount(0)
+      }
+    } catch (error) {
+      setPromoError('Failed to validate promo code')
+      setPromoSuccess(false)
+      setPromoDiscount(0)
+    }
+  }
+  
+  const calculateSubtotal = () => {
+    return (tickets.adult * PRICING.adult) +
+           (tickets.child * PRICING.child) +
+           (tickets.senior * PRICING.senior)
+  }
+  
+  const calculateDiscount = () => {
+    return calculateSubtotal() * (promoDiscount / 100)
+  }
+  
+  const calculateTotal = () => {
+    return calculateSubtotal() - calculateDiscount()
+  }
+  
+  const getTotalTickets = () => {
+    return tickets.adult + tickets.child + tickets.senior
+  }
+  
+  const formatShowtime = (datetimeString) => {
+    if (!datetimeString) return ''
+    const date = new Date(datetimeString)
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+  }
 
   const fetchSavedCards = async () => {
     if (!user) return
@@ -144,300 +285,133 @@ export default function BookingPage() {
             </h1>
 
             {/* Movie and Showtime Info */}
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Booking Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="font-medium text-gray-600">Movie:</span>
-                  <p className="text-lg text-gray-800">{bookingInfo.movie}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-600">Showtime:</span>
-                  <p className="text-lg text-gray-800">{bookingInfo.showtime}</p>
+            {(loadingShowtime || loadingMovie) ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading booking details...</p>
+              </div>
+            ) : showtime && movie ? (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Booking Details</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <span className="font-medium text-gray-600">Movie:</span>
+                    <p className="text-lg text-gray-800">{movie.title}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">Showtime:</span>
+                    <p className="text-lg text-gray-800">{formatShowtime(showtime.showtime)}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">Showroom:</span>
+                    <p className="text-lg text-gray-800">{showtime.showroom_name || `Showroom ${showtime.showroom_id}`}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">Base Price:</span>
+                    <p className="text-lg text-gray-800">${parseFloat(showtime.price).toFixed(2)} per ticket</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+                <p className="text-yellow-800">Showtime information not found. Please select a showtime from the movie page.</p>
+                <Link href="/" className="text-blue-600 hover:underline mt-2 inline-block">
+                  ← Back to Movies
+                </Link>
+              </div>
+            )}
 
-            {/* Booking Form (UI Only) */}
+            {/* Booking Form */}
+            {showtime && movie && (
             <form className="space-y-6">
-              {/* Number of Tickets */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Adult Tickets
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Child Tickets
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Customer Information */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Customer Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+              {/* Ticket Selection */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Tickets</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="border border-gray-300 rounded-lg p-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name
+                      Adult Tickets
                     </label>
-                    <input
-                      type="text"
+                    <p className="text-xs text-gray-500 mb-3">${PRICING.adult.toFixed(2)} each</p>
+                    <select 
+                      value={tickets.adult}
+                      onChange={(e) => handleTicketChange('adult', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Enter your first name"
-                      defaultValue={user?.user_metadata?.first_name || ''}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Enter your last name"
-                      defaultValue={user?.user_metadata?.last_name || ''}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Enter your email"
-                      defaultValue={user?.email || ''}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Method Selection */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Method</h3>
-                
-                {!user ? (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-yellow-800">
-                      Please{' '}
-                      <Link href="/login" className="font-medium underline">
-                        sign in
-                      </Link>{' '}
-                      to use saved payment methods or{' '}
-                      <Link href="/register" className="font-medium underline">
-                        create an account
-                      </Link>
-                      .
-                    </p>
-                  </div>
-                ) : loadingCards ? (
-                  <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                    <p className="mt-2 text-sm text-gray-600">Loading payment methods...</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {savedCards.length > 0 && (
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Select a saved card
-                        </label>
-                        {savedCards.map((card) => (
-                          <div
-                            key={card.id}
-                            className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                              selectedCardId === card.id
-                                ? 'border-indigo-500 bg-indigo-50'
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}
-                            onClick={() => {
-                              setSelectedCardId(card.id)
-                              setShowNewCardForm(false)
-                            }}
-                          >
-                            <div className="flex items-center">
-                              <input
-                                type="radio"
-                                name="paymentCard"
-                                checked={selectedCardId === card.id}
-                                onChange={() => setSelectedCardId(card.id)}
-                                className="mr-3"
-                              />
-                              <div className="flex-1">
-                                <p className="font-semibold text-gray-900">{card.brand}</p>
-                                <p className="text-sm text-gray-600">•••• •••• •••• {card.last_four}</p>
-                                <p className="text-xs text-gray-500">{card.cardholder_name}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowNewCardForm(!showNewCardForm)
-                        setSelectedCardId('')
-                      }}
-                      className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
                     >
-                      {showNewCardForm ? '- Cancel adding new card' : '+ Add new payment card'}
-                    </button>
-
-                    {showNewCardForm && (
-                      <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 space-y-4">
-                        <h4 className="font-medium text-gray-900">New Card Details</h4>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Cardholder Name
-                          </label>
-                          <input
-                            type="text"
-                            name="cardholderName"
-                            value={newCard.cardholderName}
-                            onChange={handleNewCardChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            placeholder="John Doe"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Card Number
-                          </label>
-                          <input
-                            type="text"
-                            name="cardNumber"
-                            value={newCard.cardNumber}
-                            onChange={handleNewCardChange}
-                            maxLength="19"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            placeholder="1234 5678 9012 3456"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Month
-                            </label>
-                            <select
-                              name="expirationMonth"
-                              value={newCard.expirationMonth}
-                              onChange={handleNewCardChange}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            >
-                              <option value="">MM</option>
-                              {months.map(m => (
-                                <option key={m.value} value={m.value}>{m.label}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Year
-                            </label>
-                            <select
-                              name="expirationYear"
-                              value={newCard.expirationYear}
-                              onChange={handleNewCardChange}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            >
-                              <option value="">YYYY</option>
-                              {years.map(y => (
-                                <option key={y} value={y}>{y}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              CVV
-                            </label>
-                            <input
-                              type="text"
-                              name="cvv"
-                              value={newCard.cvv}
-                              onChange={handleNewCardChange}
-                              maxLength="4"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                              placeholder="123"
-                            />
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={handleAddNewCard}
-                          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700"
-                        >
-                          Save Card
-                        </button>
-                      </div>
-                    )}
+                      {[...Array(11)].map((_, i) => (
+                        <option key={i} value={i}>{i}</option>
+                      ))}
+                    </select>
                   </div>
+                  <div className="border border-gray-300 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Child Tickets
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">${PRICING.child.toFixed(2)} each (Under 12)</p>
+                    <select 
+                      value={tickets.child}
+                      onChange={(e) => handleTicketChange('child', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      {[...Array(11)].map((_, i) => (
+                        <option key={i} value={i}>{i}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="border border-gray-300 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Senior Tickets
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">${PRICING.senior.toFixed(2)} each (65+)</p>
+                    <select 
+                      value={tickets.senior}
+                      onChange={(e) => handleTicketChange('senior', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      {[...Array(11)].map((_, i) => (
+                        <option key={i} value={i}>{i}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {getTotalTickets() > 0 && (
+                  <p className="mt-3 text-sm text-gray-600">
+                    Total tickets: <span className="font-semibold">{getTotalTickets()}</span>
+                  </p>
                 )}
               </div>
 
-              {/* Theater Selection */}
+              {/* Promo Code */}
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Theater Selection</h3>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Theater Location
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <option value="">Choose a location...</option>
-                    <option value="downtown">Downtown Cinema - Main Street</option>
-                    <option value="mall">Mall Cinema - Shopping Center</option>
-                    <option value="westside">Westside Theater - Oak Avenue</option>
-                    <option value="eastend">East End Movies - Park Road</option>
-                  </select>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Promo Code</h3>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => {
+                      setPromoCode(e.target.value.toUpperCase())
+                      setPromoError('')
+                      setPromoSuccess(false)
+                    }}
+                    placeholder="Enter promo code"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={validatePromoCode}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Apply
+                  </button>
                 </div>
-              </div>
-
-              {/* Seat Selection Placeholder */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Seat Selection</h3>
-                <div className="bg-gray-100 rounded-lg p-8 text-center">
-                  <p className="text-gray-600 mb-4">🎭 Theater Seating Chart</p>
-                  <p className="text-sm text-gray-500">
-                    Seat selection and pricing will be implemented in future sprints.
+                {promoError && (
+                  <p className="mt-2 text-sm text-red-600">{promoError}</p>
+                )}
+                {promoSuccess && (
+                  <p className="mt-2 text-sm text-green-600">
+                    ✓ Promo code applied! {promoDiscount}% discount
                   </p>
-                  <div className="mt-4 text-xs text-gray-400">
-                    [Screen would go here]<br/>
-                    [Seat layout would be displayed here]
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Summary */}
@@ -446,65 +420,102 @@ export default function BookingPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Movie:</span>
-                    <span className="font-medium">{bookingInfo.movie}</span>
+                    <span className="font-medium">{movie?.title}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Showtime:</span>
-                    <span className="font-medium">{bookingInfo.showtime}</span>
+                    <span className="font-medium">{formatShowtime(showtime?.showtime)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Theater:</span>
-                    <span className="font-medium">To be selected</span>
+                    <span>Showroom:</span>
+                    <span className="font-medium">{showtime?.showroom_name || `Showroom ${showtime?.showroom_id}`}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Seats:</span>
-                    <span className="font-medium">To be selected</span>
-                  </div>
-                  {selectedCardId && (
-                    <div className="flex justify-between">
-                      <span>Payment:</span>
-                      <span className="font-medium">
-                        {savedCards.find(c => c.id === selectedCardId)?.brand} ••••{' '}
-                        {savedCards.find(c => c.id === selectedCardId)?.last_four}
-                      </span>
+                  
+                  {/* Ticket Breakdown */}
+                  {tickets.adult > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Adult Tickets ({tickets.adult} × ${PRICING.adult.toFixed(2)}):</span>
+                      <span>${(tickets.adult * PRICING.adult).toFixed(2)}</span>
                     </div>
                   )}
+                  {tickets.child > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Child Tickets ({tickets.child} × ${PRICING.child.toFixed(2)}):</span>
+                      <span>${(tickets.child * PRICING.child).toFixed(2)}</span>
+                    </div>
+                  )}
+                  {tickets.senior > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Senior Tickets ({tickets.senior} × ${PRICING.senior.toFixed(2)}):</span>
+                      <span>${(tickets.senior * PRICING.senior).toFixed(2)}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between border-t pt-2 mt-2">
-                    <span className="font-semibold">Total:</span>
-                    <span className="font-semibold">$XX.XX</span>
+                    <span>Subtotal:</span>
+                    <span>${calculateSubtotal().toFixed(2)}</span>
                   </div>
+                  
+                  {promoSuccess && promoDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({promoDiscount}%):</span>
+                      <span>-${calculateDiscount().toFixed(2)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between border-t pt-2 mt-2 text-lg">
+                    <span className="font-semibold">Total:</span>
+                    <span className="font-semibold text-red-600">${calculateTotal().toFixed(2)}</span>
+                  </div>
+                  
+                  {getTotalTickets() === 0 && (
+                    <p className="text-sm text-gray-500 text-center mt-4">
+                      Please select at least one ticket
+                    </p>
+                  )}
                 </div>
               </div>
 
+              {/* Seat Selection - Only show if tickets are selected */}
+              {getTotalTickets() > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Your Seats</h3>
+                  <SeatMap
+                    showtimeId={showtime?.id}
+                    maxSeats={getTotalTickets()}
+                    onSeatsSelected={setSelectedSeats}
+                  />
+                </div>
+              )}
+
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 mt-8">
                 <button
                   type="button"
                   className="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-400 transition-colors"
-                  onClick={() => window.history.back()}
+                  onClick={() => router.push(`/movie/${movie?.id}`)}
                 >
-                  Go Back
+                  ← Back to Movie
                 </button>
                 <button
-                  type="submit"
-                  className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    alert('Booking functionality will be implemented in future sprints!')
+                  type="button"
+                  disabled={getTotalTickets() === 0 || selectedSeats.length !== getTotalTickets()}
+                  className={`flex-1 py-3 px-6 rounded-lg transition-colors font-medium ${
+                    getTotalTickets() === 0 || selectedSeats.length !== getTotalTickets()
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-red-600 text-white hover:bg-red-700'
+                  }`}
+                  onClick={() => {
+                    if (getTotalTickets() > 0 && selectedSeats.length === getTotalTickets()) {
+                      alert(`Ready to complete booking!\n\nMovie: ${movie.title}\nSeats: ${selectedSeats.map(s => s.seat_label).join(', ')}\nTotal: $${calculateTotal().toFixed(2)}`)
+                    }
                   }}
                 >
-                  Complete Booking
+                  Complete Booking →
                 </button>
               </div>
             </form>
-
-            {/* Note for Demo */}
-            <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800 text-sm">
-                <strong>Demo Note:</strong> This is a prototype booking page. 
-                Seat selection, pricing calculation, and payment processing will be fully implemented in later sprints.
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </main>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import Header from '../../../components/Header'
@@ -9,6 +9,7 @@ import ApiService from '../../../services/api'
 
 export default function MovieDetails() {
   const params = useParams()
+  const router = useRouter()
   const { movieId } = params
   const [movie, setMovie] = useState(null)
   const [showtimes, setShowtimes] = useState([])
@@ -75,7 +76,7 @@ export default function MovieDetails() {
   }
 
   const handleShowtimeClick = (showtime) => {
-    window.location.href = `/booking?movie=${encodeURIComponent(movie.title)}&movieId=${movie.id}&showtimeId=${showtime.id}&showtime=${encodeURIComponent(showtime.showtime)}`
+    router.push(`/booking?movieId=${movieId}&showtimeId=${showtime.id}`)
   }
 
   const getTrailerUrl = () => {
@@ -237,11 +238,9 @@ export default function MovieDetails() {
                                 <button
                                   key={showtime.id}
                                   onClick={() => handleShowtimeClick(showtime)}
-                                  className="bg-white border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-3 rounded-lg transition-colors font-medium shadow-sm"
+                                  className="bg-red-600 text-white hover:bg-red-700 px-6 py-3 rounded-lg transition-colors font-semibold text-lg shadow-md"
                                 >
-                                  <div className="text-lg font-bold">{timeStr}</div>
-                                  <div className="text-sm opacity-90">{showtime.showroom_name}</div>
-                                  <div className="text-sm font-semibold mt-1">${parseFloat(showtime.price).toFixed(2)}</div>
+                                  {timeStr}
                                 </button>
                               )
                             })}
