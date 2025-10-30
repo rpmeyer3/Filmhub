@@ -1017,6 +1017,15 @@ class SendPromotionEmailView(APIView):
                 emails_sent = 0
                 failed_emails = []
                 
+                # Try to use Resend for real email sending, fallback to console
+                import os
+                resend_api_key = os.getenv('RESEND_API_KEY')
+                use_resend = resend_api_key and resend_api_key != 'your-resend-api-key-here'
+                
+                if use_resend:
+                    import resend
+                    resend.api_key = resend_api_key
+                
                 for user in subscribed_users:
                     try:
                         user_email = user.get('email')
@@ -1024,7 +1033,59 @@ class SendPromotionEmailView(APIView):
                         
                         subject = f'Special Offer: {promotion["code"]} - {promotion["discount_percentage"]}% Off!'
                         
-                        message = f'''
+                        # HTML email template
+                        html_message = f'''
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                                .header {{ background-color: #dc2626; color: white; padding: 20px; text-align: center; }}
+                                .content {{ background-color: #f9fafb; padding: 30px; }}
+                                .promo-code {{ background-color: #fee2e2; border: 2px dashed #dc2626; padding: 15px; text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; color: #dc2626; }}
+                                .discount {{ color: #059669; font-size: 28px; font-weight: bold; }}
+                                .cta-button {{ display: inline-block; background-color: #dc2626; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                                .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #6b7280; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="header">
+                                    <h1>🎬 Film-Hub Special Offer!</h1>
+                                </div>
+                                <div class="content">
+                                    <p>Hello {first_name},</p>
+                                    <p>We have an exciting promotion just for you!</p>
+                                    
+                                    <div class="promo-code">
+                                        {promotion["code"]}
+                                    </div>
+                                    
+                                    <p class="discount">Get {promotion["discount_percentage"]}% OFF your next booking!</p>
+                                    
+                                    <p><strong>Valid from:</strong> {promotion["start_date"]} to {promotion["end_date"]}</p>
+                                    
+                                    <p>Don't miss out on this great deal. Book your tickets today!</p>
+                                    
+                                    <div style="text-align: center;">
+                                        <a href="http://localhost:3000" class="cta-button">Book Now</a>
+                                    </div>
+                                    
+                                    <p>Thank you for being a valued customer!</p>
+                                    
+                                    <p><strong>Best regards,</strong><br>The Film-Hub Team</p>
+                                </div>
+                                <div class="footer">
+                                    <p>To unsubscribe from promotional emails, please visit your <a href="http://localhost:3000/profile">profile settings</a>.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        '''
+                        
+                        # Plain text version for email clients that don't support HTML
+                        text_message = f'''
 Hello {first_name},
 
 We have an exciting promotion for you!
@@ -1047,13 +1108,26 @@ The Film-Hub Team
 To unsubscribe from promotional emails, please visit your profile settings.
                         '''
                         
-                        send_mail(
-                            subject=subject,
-                            message=message,
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[user_email],
-                            fail_silently=False,
-                        )
+                        if use_resend:
+                            # Send real email via Resend
+                            params = {
+                                "from": "Film-Hub <onboarding@resend.dev>",  # Free Resend test domain (works without verification)
+                                "to": [user_email],
+                                "subject": subject,
+                                "html": html_message,
+                                "text": text_message,
+                            }
+                            resend.Emails.send(params)
+                            print(f"✓ Sent email to {user_email} via Resend")
+                        else:
+                            # Fallback to console output for development
+                            print(f"\n{'='*60}")
+                            print(f"PROMOTIONAL EMAIL (Console Mode)")
+                            print(f"{'='*60}")
+                            print(f"To: {user_email}")
+                            print(f"Subject: {subject}")
+                            print(f"\n{text_message}")
+                            print(f"{'='*60}\n")
                         
                         emails_sent += 1
                         

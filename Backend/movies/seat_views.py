@@ -390,15 +390,11 @@ class CancelBookingView(APIView):
                         'minutes_remaining': int(minutes_until_showtime)
                     }, status=status.HTTP_400_BAD_REQUEST)
                 
-                # Release the seats back to available
+                # Release the seats by deleting from booking_seats table
+                # This makes them available for other bookings
                 cursor.execute('''
-                    UPDATE seats
-                    SET is_available = TRUE
-                    WHERE id IN (
-                        SELECT seat_id 
-                        FROM booking_seats 
-                        WHERE booking_id = %s
-                    )
+                    DELETE FROM booking_seats
+                    WHERE booking_id = %s
                 ''', [booking_id])
                 
                 # Update booking status to cancelled

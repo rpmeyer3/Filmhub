@@ -56,5 +56,5 @@ urlpatterns = [
     path('showtimes/<int:showtime_id>/seats/', ShowtimeSeatsView.as_view(), name='showtime-seats'),
     path('bookings/', CreateBookingView.as_view(), name='create-booking'),
     path('bookings/user/', UserBookingsView.as_view(), name='user-bookings'),
-    path('bookings/<int:booking_id>/cancel/', CancelBookingView.as_view(), name='cancel-booking'),
+    path('bookings/<uuid:booking_id>/cancel/', CancelBookingView.as_view(), name='cancel-booking'),
 ]
