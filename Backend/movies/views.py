@@ -1124,7 +1124,7 @@ To unsubscribe from promotional emails, please visit your profile settings.
                                 )
                                 
                                 params = {
-                                    "from": "Film-Hub <onboarding@resend.dev>",  # Free Resend test domain
+                                    "from": "Film-Hub <rpmeyer3@outlook.com>",  # Use verified email as sender
                                     "to": [RESEND_VERIFIED_EMAIL],  # Send to verified email only
                                     "subject": test_subject,
                                     "html": test_html,
