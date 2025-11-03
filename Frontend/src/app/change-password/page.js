@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../contexts/AuthContext'
-import Header from '../../components/Header'
-import { supabase } from '../../lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
+import Header from '@/components/Header'
+import { supabase } from '@/lib/supabase'
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('')
