@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .models import MovieShow
 from django.db import connection
 
 
@@ -135,7 +136,23 @@ class ShowtimeSeatsView(APIView):
                 # Note: Since showtime_table uses integer IDs and booking_seats expects UUIDs,
                 # and there are no bookings yet, we'll return empty list for now
                 # TODO: Fix this when implementing actual booking creation
-                booked_seat_ids = []
+                
+                cursor.execute("""
+                    WITH target AS (
+                    SELECT st.movie_id, st.showroom_id, st.showtime
+                     FROM showtime_table st
+                    WHERE st.id = %s
+                    )
+                    SELECT bs.seat_id::text
+                    FROM booking_seats bs
+                    JOIN showtimes sht ON bs.showtime_id = sht.id
+                    JOIN target t
+                    ON t.movie_id = sht.movie_id
+                    AND t.showroom_id = sht.showroom_id
+                    AND t.showtime = sht.showtime
+                    """, [showtime_id])
+
+                booked_seat_ids = {row[0] for row in cursor.fetchall()}
                 
                 # Build seat list with availability
                 seats = []

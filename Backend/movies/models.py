@@ -64,6 +64,9 @@ class MovieShow(models.Model):
         seats = Seat.objects.filter(show=self, is_available = True)
         return seats
     
+    def get_unavailable_seats(self):
+        seats = Seat.objects.filter(show=self, is_available = False)
+        return seats
 
 
 # Model for Seats
