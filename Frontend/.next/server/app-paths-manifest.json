@@ -1,10 +1,5 @@
 {
-<<<<<<< Updated upstream
   "/movie/[movieId]/page": "app/movie/[movieId]/page.js",
-  "/booking/page": "app/booking/page.js",
-=======
-  "/booking/page": "app/booking/page.js",
-  "/movie/[movieId]/page": "app/movie/[movieId]/page.js",
->>>>>>> Stashed changes
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/booking/page": "app/booking/page.js"
 }

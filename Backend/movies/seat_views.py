@@ -136,7 +136,7 @@ class ShowtimeSeatsView(APIView):
                 # Note: Since showtime_table uses integer IDs and booking_seats expects UUIDs,
                 # and there are no bookings yet, we'll return empty list for now
                 # TODO: Fix this when implementing actual booking creation
-<<<<<<< Updated upstream
+
                 
                 cursor.execute("""
                     WITH target AS (
@@ -154,8 +154,7 @@ class ShowtimeSeatsView(APIView):
                     """, [showtime_id])
 
                 booked_seat_ids = {row[0] for row in cursor.fetchall()}
-=======
->>>>>>> Stashed changes
+
                 
                 cursor.execute("""
                     WITH target AS (
