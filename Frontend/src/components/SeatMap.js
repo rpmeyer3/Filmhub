@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from "react";
 
+<<<<<<< Updated upstream
 export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
+=======
+export default function SeatMap({
+  showtimeId,
+  maxSeats,
+  onSeatsSelected,
+  userId,
+}) {
+>>>>>>> Stashed changes
   const [seats, setSeats] = useState([]);
   const [layout, setLayout] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -13,7 +22,11 @@ export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
     if (showtimeId) {
       fetchSeats();
     }
+<<<<<<< Updated upstream
   }, [showtimeId]);
+=======
+  }, [showtimeId, userId]);
+>>>>>>> Stashed changes
 
   // Reset selected seats when maxSeats changes
   useEffect(() => {
@@ -23,8 +36,14 @@ export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
   const fetchSeats = async () => {
     try {
       setLoading(true);
+<<<<<<< Updated upstream
       const response = await fetch(
         `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/`
+=======
+      const q = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/${q}`
+>>>>>>> Stashed changes
       );
       const data = await response.json();
 
@@ -43,10 +62,14 @@ export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
   };
 
   const handleSeatClick = (seat) => {
+<<<<<<< Updated upstream
     if (!seat.is_available) {
       // Add pointer-events-none so clicks are completely blocked
       return "bg-gray-400 cursor-not-allowed opacity-50 pointer-events-none";
     }
+=======
+    if (!seat.is_available) return;
+>>>>>>> Stashed changes
 
     const isSelected = selectedSeats.find((s) => s.id === seat.id);
 
@@ -69,7 +92,11 @@ export default function SeatMap({ showtimeId, maxSeats, onSeatsSelected }) {
     const isSelected = selectedSeats.find((s) => s.id === seat.id);
 
     if (!seat.is_available) {
+<<<<<<< Updated upstream
       return "bg-gray-400 cursor-not-allowed opacity-50";
+=======
+      return "bg-gray-400 cursor-not-allowed opacity-50 pointer-events-none";
+>>>>>>> Stashed changes
     } else if (isSelected) {
       return "bg-blue-600 text-white cursor-pointer hover:bg-blue-700";
     } else {

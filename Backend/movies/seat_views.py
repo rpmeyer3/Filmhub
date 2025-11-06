@@ -136,6 +136,7 @@ class ShowtimeSeatsView(APIView):
                 # Note: Since showtime_table uses integer IDs and booking_seats expects UUIDs,
                 # and there are no bookings yet, we'll return empty list for now
                 # TODO: Fix this when implementing actual booking creation
+<<<<<<< Updated upstream
                 
                 cursor.execute("""
                     WITH target AS (
@@ -153,18 +154,64 @@ class ShowtimeSeatsView(APIView):
                     """, [showtime_id])
 
                 booked_seat_ids = {row[0] for row in cursor.fetchall()}
+=======
+>>>>>>> Stashed changes
                 
-                # Build seat list with availability
+                cursor.execute("""
+                    WITH target AS (
+                        SELECT st.movie_id, st.showroom_id, st.showtime
+                        FROM showtime_table st
+                        WHERE st.id = %s
+                    )
+                    SELECT bs.seat_id::text
+                    FROM booking_seats bs
+                    JOIN showtimes sht ON bs.showtime_id = sht.id
+                    JOIN target t
+                    ON t.movie_id = sht.movie_id
+                    AND t.showroom_id = sht.showroom_id
+                    AND t.showtime = sht.showtime
+                """, [showtime_id])
+                booked_seat_ids = {row[0] for row in cursor.fetchall()}
+
+                current_user_id = request.query_params.get('user_id')
+                try:
+                    cursor.execute("""
+                        SELECT sh.seat_id::text, sh.user_id::text
+                        FROM seat_holds sh
+                        WHERE sh.showtime_id IN (
+                            SELECT id FROM showtimes
+                            WHERE movie_id    = (SELECT movie_id    FROM showtime_table WHERE id=%s)
+                              AND showroom_id = (SELECT showroom_id FROM showtime_table WHERE id=%s)
+                              AND showtime    = (SELECT showtime    FROM showtime_table WHERE id=%s)
+                        )
+                          AND sh.expires_at > NOW()
+                    """, [showtime_id, showtime_id, showtime_id])
+                    active_holds = cursor.fetchall()
+
+                    # exclude the requesting user's own holds
+                    held_by_others = {
+                        seat_id for (seat_id, holder) in active_holds
+                        if not current_user_id or holder != str(current_user_id)
+                    }
+                except Exception:
+                    # if seat_holds table doesn't exist yet
+                    held_by_others = set()
+
+                # --- Combine booked + held seats ---
+                unavailable_ids = booked_seat_ids | held_by_others
+
+                # --- Build final seat list ---
                 seats = []
                 for seat_id, seat_row, seat_number in all_seats:
-                    is_available = str(seat_id) not in [str(sid) for sid in booked_seat_ids]
+                    is_available = str(seat_id) not in unavailable_ids
                     seats.append({
                         'id': str(seat_id),
-                        'row_number': ord(seat_row) - 64 if len(seat_row) == 1 else 1,  # Convert A->1, B->2, etc.
+                        'row_number': ord(seat_row) - 64 if len(seat_row) == 1 else 1,
                         'seat_number': seat_number,
                         'seat_label': f"{seat_row}{seat_number}",
                         'is_available': is_available
                     })
+
                 
                 return Response({
                     'success': True,
