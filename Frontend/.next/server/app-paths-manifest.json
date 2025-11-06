@@ -1,10 +1,4 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/booking/page": "app/booking/page.js",
-  "/admin/promotions/page": "app/admin/promotions/page.js",
-  "/admin/showtimes/page": "app/admin/showtimes/page.js",
-  "/movie/[movieId]/page": "app/movie/[movieId]/page.js",
-  "/admin/page": "app/admin/page.js",
   "/page": "app/page.js",
-  "/admin/movies/page": "app/admin/movies/page.js"
+  "/booking/page": "app/booking/page.js"
 }
