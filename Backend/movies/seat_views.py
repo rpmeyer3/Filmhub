@@ -300,18 +300,36 @@ class CreateBookingView(APIView):
                         100, True  # Default availability
                     ])
                 
-                # Check if seats are still available
+               # Check if seats are already booked
                 placeholders = ','.join(['%s'] * len(seat_ids))
                 cursor.execute(f'''
-                    SELECT bs.seat_id
+                    SELECT bs.seat_id::text
                     FROM booking_seats bs
                     WHERE bs.seat_id IN ({placeholders})
                 ''', seat_ids)
-                
-                already_booked = cursor.fetchall()
-                if already_booked:
+                already_booked = {row[0] for row in cursor.fetchall()}
+
+                # Also check if any of the selected seats are currently on hold (by another user)
+                user_id_str = str(user_id)
+                cursor.execute(f'''
+                    SELECT sh.seat_id::text, sh.user_id::text
+                    FROM seat_holds sh
+                    WHERE sh.seat_id IN ({placeholders})
+                    AND sh.expires_at > NOW()
+                ''', seat_ids)
+                active_holds = cursor.fetchall()
+
+                # filter out holds belonging to this same user
+                held_by_others = {
+                    seat_id for seat_id, holder in active_holds
+                    if holder != user_id_str
+                }
+
+                # Merge both sets of unavailable seats
+                unavailable_ids = already_booked | held_by_others
+                if unavailable_ids:
                     return Response(
-                        {'error': 'One or more seats are no longer available'},
+                        {'error': 'Some of the selected seats are unavailable (booked or held by another user).'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 

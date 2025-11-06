@@ -243,3 +243,24 @@ class Promotion(models.Model):
 
 
 
+class SeatHold(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Note: we use raw UUIDs rather than FKs because your current seats/showtimes
+    # tables are being accessed via raw SQL. This avoids schema coupling.
+    seat_id = models.UUIDField()       # references seats.id
+    user_id = models.UUIDField()       # Supabase user UUID
+    showtime_id = models.UUIDField()   # references showtimes.id (UUID version)
+
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'seat_holds'
+        indexes = [
+            models.Index(fields=['showtime_id', 'seat_id']),
+            models.Index(fields=['expires_at']),
+        ]
+
+    def __str__(self):
+        return f"Hold seat {self.seat_id} for user {self.user_id} until {self.expires_at}"
