@@ -50,6 +50,8 @@ export default function BookingPage() {
 
   const [savedCards, setSavedCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState("");
+  //helper to know if user has any cards
+  const hasSavedCards = savedCards.length > 0;
   const [showNewCardForm, setShowNewCardForm] = useState(false);
   const [loadingCards, setLoadingCards] = useState(false);
   const [newCard, setNewCard] = useState({
@@ -304,10 +306,20 @@ export default function BookingPage() {
       return;
     }
 
-    if (!selectedCardId && savedCards.length > 0) {
-      alert("Please select a payment card");
+    // NEW: block purchase if no saved cards
+    if (!hasSavedCards) {
+      alert("You must add a payment method before booking.");
+      router.push("/payment");
       return;
     }
+
+    //check with the boys
+
+    // NEW: ensure a specific card is selected
+    //if (!selectedCardId) {
+    //  alert("Please select a payment card");
+    //  return;
+    //}
 
     try {
       const bookingData = {
@@ -319,14 +331,12 @@ export default function BookingPage() {
         num_child_tickets: tickets.child,
         num_senior_tickets: tickets.senior,
         total_amount: calculateTotal(),
-        payment_card_id: selectedCardId || null,
+        payment_card_id: selectedCardId, // required
       };
 
       const response = await fetch("http://127.0.0.1:8000/api/bookings/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
       });
 
@@ -438,6 +448,76 @@ export default function BookingPage() {
                 </Link>
               </div>
             )}
+
+            {/* Payment Method */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Payment Method
+              </h3>
+
+              {loadingCards ? (
+                <p className="text-sm text-gray-500">
+                  Loading payment methods…
+                </p>
+              ) : hasSavedCards ? (
+                <div className="space-y-3">
+                  {savedCards.map((c) => (
+                    <label
+                      key={c.id}
+                      className={`flex items-center justify-between border rounded-lg p-3 cursor-pointer ${
+                        selectedCardId === c.id
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="paymentCard"
+                          value={c.id}
+                          checked={selectedCardId === c.id}
+                          onChange={() => setSelectedCardId(c.id)}
+                          className="h-4 w-4"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900">{c.brand}</p>
+                          <p className="text-sm text-gray-600">
+                            •••• •••• •••• {c.last_four}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Expires:{" "}
+                            {new Date(c.expiration_date).toLocaleDateString(
+                              "en-US",
+                              { month: "2-digit", year: "numeric" }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-800 text-sm underline"
+                        onClick={() => router.push("/payment")}
+                      >
+                        Manage
+                      </button>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800">
+                    You don’t have a saved payment method yet.
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-2 inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    onClick={() => router.push("/payment")}
+                  >
+                    Add a Payment Method
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Booking Form */}
             {showtime && movie && (
@@ -703,11 +783,17 @@ export default function BookingPage() {
                   >
                     ← Back to Movie
                   </button>
+                  {/*
+                  // Complete Booking Button
+                  // add "|| !selectedCardId" if boys want it
+                  */}
                   <button
                     type="button"
-                    disabled={!seatsConfirmed}
+                    disabled={
+                      !seatsConfirmed || !hasSavedCards || !selectedCardId
+                    }
                     className={`flex-1 py-3 px-6 rounded-lg transition-colors font-medium text-lg ${
-                      !seatsConfirmed
+                      !seatsConfirmed || !hasSavedCards
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-red-600 text-white hover:bg-red-700"
                     }`}

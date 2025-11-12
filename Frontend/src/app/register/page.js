@@ -1,179 +1,183 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useAuth } from '../../contexts/AuthContext'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
+    email: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
     receivePromotions: false,
     addPaymentCard: false,
-    cardholderName: '',
-    cardNumber: '',
-    expirationMonth: '',
-    expirationYear: '',
-    cvv: ''
-  })
-  const [errors, setErrors] = useState({})
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+    cardholderName: "",
+    cardNumber: "",
+    expirationMonth: "",
+    expirationYear: "",
+    cvv: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const { signUp } = useAuth()
-  const router = useRouter()
+  const { signUp } = useAuth();
+  const router = useRouter();
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
+      newErrors.email = "Email is invalid";
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     // Name validation
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = "First name is required";
     }
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = "Last name is required";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
+    e.preventDefault();
 
-    setLoading(true)
-    setErrors({})
-    setMessage('')
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setErrors({});
+    setMessage("");
 
     try {
-      const { data, error } = await signUp(
-        formData.email,
-        formData.password,
-        {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          receive_promotions: formData.receivePromotions
-        }
-      )
+      const { data, error } = await signUp(formData.email, formData.password, {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        receive_promotions: formData.receivePromotions,
+      });
 
       if (error) {
-        throw error
+        throw error;
       }
 
       if (data?.user) {
         // If user wants to add payment card, save it
         if (formData.addPaymentCard && formData.cardNumber) {
           try {
-            const cardResponse = await fetch('http://localhost:8000/api/payment-cards/', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                supabase_id: data.user.id,
-                cardholder_name: formData.cardholderName,
-                card_number: formData.cardNumber.replace(/\s/g, ''),
-                expiration_month: parseInt(formData.expirationMonth),
-                expiration_year: parseInt(formData.expirationYear),
-                cvv: formData.cvv
-              })
-            })
-            
-            const cardData = await cardResponse.json()
+            {
+              /*changed here*/
+            }
+            const cardResponse = await fetch(
+              "http://localhost:8000/api/payment-cards/",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  supabase_id: data.user.id,
+                  cardholder_name: formData.cardholderName,
+                  card_number: formData.cardNumber.replace(/\s/g, ""),
+                  expiration_month: parseInt(formData.expirationMonth),
+                  expiration_year: parseInt(formData.expirationYear),
+                  cvv: formData.cvv,
+                }),
+              }
+            );
+
+            const cardData = await cardResponse.json();
             if (!cardData.success) {
-              console.error('Failed to add payment card:', cardData.errors)
+              console.error("Failed to add payment card:", cardData.errors);
             }
           } catch (cardError) {
-            console.error('Error adding payment card:', cardError)
+            console.error("Error adding payment card:", cardError);
             // Don't fail registration if card fails, just log it
           }
         }
 
-        setMessage('Registration successful! Please check your email to confirm your account.')
+        setMessage(
+          "Registration successful! Please check your email to confirm your account."
+        );
         // Optionally redirect after a delay
         setTimeout(() => {
-          router.push('/login')
-        }, 3000)
+          router.push("/login");
+        }, 3000);
       }
     } catch (error) {
       setErrors({
-        submit: error.message || 'Registration failed. Please try again.'
-      })
+        submit: error.message || "Registration failed. Please try again.",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
-    
+    const { name, value, type, checked } = e.target;
+
     // Format card number with spaces
-    if (name === 'cardNumber') {
-      const cleaned = value.replace(/\s/g, '')
-      const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned
-      setFormData(prev => ({
+    if (name === "cardNumber") {
+      const cleaned = value.replace(/\s/g, "");
+      const formatted = cleaned.match(/.{1,4}/g)?.join(" ") || cleaned;
+      setFormData((prev) => ({
         ...prev,
-        [name]: formatted
-      }))
+        [name]: formatted,
+      }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }))
+        [name]: type === "checkbox" ? checked : value,
+      }));
     }
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: "",
+      }));
     }
-  }
+  };
 
-  const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 15 }, (_, i) => currentYear + i)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 15 }, (_, i) => currentYear + i);
   const months = [
-    { value: 1, label: '01 - Jan' },
-    { value: 2, label: '02 - Feb' },
-    { value: 3, label: '03 - Mar' },
-    { value: 4, label: '04 - Apr' },
-    { value: 5, label: '05 - May' },
-    { value: 6, label: '06 - Jun' },
-    { value: 7, label: '07 - Jul' },
-    { value: 8, label: '08 - Aug' },
-    { value: 9, label: '09 - Sep' },
-    { value: 10, label: '10 - Oct' },
-    { value: 11, label: '11 - Nov' },
-    { value: 12, label: '12 - Dec' },
-  ]
+    { value: 1, label: "01 - Jan" },
+    { value: 2, label: "02 - Feb" },
+    { value: 3, label: "03 - Mar" },
+    { value: 4, label: "04 - Apr" },
+    { value: 5, label: "05 - May" },
+    { value: 6, label: "06 - Jun" },
+    { value: 7, label: "07 - Jul" },
+    { value: 8, label: "08 - Aug" },
+    { value: 9, label: "09 - Sep" },
+    { value: 10, label: "10 - Oct" },
+    { value: 11, label: "11 - Nov" },
+    { value: 12, label: "12 - Dec" },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -183,7 +187,7 @@ export default function Register() {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
+            Or{" "}
             <Link
               href="/login"
               className="font-medium text-indigo-600 hover:text-indigo-500"
@@ -209,7 +213,10 @@ export default function Register() {
           <div className="space-y-4">
             {/* First Name */}
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 First Name
               </label>
               <input
@@ -220,7 +227,7 @@ export default function Register() {
                 value={formData.firstName}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.firstName ? 'border-red-300' : 'border-gray-300'
+                  errors.firstName ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="First Name"
               />
@@ -231,7 +238,10 @@ export default function Register() {
 
             {/* Last Name */}
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Last Name
               </label>
               <input
@@ -242,7 +252,7 @@ export default function Register() {
                 value={formData.lastName}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.lastName ? 'border-red-300' : 'border-gray-300'
+                  errors.lastName ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Last Name"
               />
@@ -253,7 +263,10 @@ export default function Register() {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <input
@@ -265,7 +278,7 @@ export default function Register() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
+                  errors.email ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
               />
@@ -276,7 +289,10 @@ export default function Register() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <input
@@ -288,7 +304,7 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.password ? 'border-red-300' : 'border-gray-300'
+                  errors.password ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Password (min. 6 characters)"
               />
@@ -299,7 +315,10 @@ export default function Register() {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Confirm Password
               </label>
               <input
@@ -311,12 +330,14 @@ export default function Register() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                  errors.confirmPassword ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Confirm password"
               />
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
@@ -330,7 +351,10 @@ export default function Register() {
                 onChange={handleChange}
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
-              <label htmlFor="receivePromotions" className="ml-2 block text-sm text-gray-900">
+              <label
+                htmlFor="receivePromotions"
+                className="ml-2 block text-sm text-gray-900"
+              >
                 I would like to receive promotional emails and special offers
               </label>
             </div>
@@ -346,7 +370,10 @@ export default function Register() {
                   onChange={handleChange}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
-                <label htmlFor="addPaymentCard" className="ml-2 block text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="addPaymentCard"
+                  className="ml-2 block text-sm font-medium text-gray-900"
+                >
                   Add payment card now (optional)
                 </label>
               </div>
@@ -358,7 +385,10 @@ export default function Register() {
                   </p>
 
                   <div>
-                    <label htmlFor="cardholderName" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="cardholderName"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Cardholder Name
                     </label>
                     <input
@@ -373,7 +403,10 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="cardNumber"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Card Number
                     </label>
                     <input
@@ -390,7 +423,10 @@ export default function Register() {
 
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label htmlFor="expirationMonth" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="expirationMonth"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Month
                       </label>
                       <select
@@ -401,7 +437,7 @@ export default function Register() {
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       >
                         <option value="">MM</option>
-                        {months.map(month => (
+                        {months.map((month) => (
                           <option key={month.value} value={month.value}>
                             {month.label}
                           </option>
@@ -410,7 +446,10 @@ export default function Register() {
                     </div>
 
                     <div>
-                      <label htmlFor="expirationYear" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="expirationYear"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Year
                       </label>
                       <select
@@ -421,7 +460,7 @@ export default function Register() {
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       >
                         <option value="">YYYY</option>
-                        {years.map(year => (
+                        {years.map((year) => (
                           <option key={year} value={year}>
                             {year}
                           </option>
@@ -430,7 +469,10 @@ export default function Register() {
                     </div>
 
                     <div>
-                      <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="cvv"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         CVV
                       </label>
                       <input
@@ -460,22 +502,28 @@ export default function Register() {
               disabled={loading}
               className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
                 loading
-                  ? 'bg-indigo-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  ? "bg-indigo-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               }`}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-xs text-gray-600">
-              By creating an account, you agree to our{' '}
-              <Link href="/terms" className="text-indigo-600 hover:text-indigo-500">
+              By creating an account, you agree to our{" "}
+              <Link
+                href="/terms"
+                className="text-indigo-600 hover:text-indigo-500"
+              >
                 Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="text-indigo-600 hover:text-indigo-500">
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="text-indigo-600 hover:text-indigo-500"
+              >
                 Privacy Policy
               </Link>
             </p>
@@ -483,5 +531,5 @@ export default function Register() {
         </form>
       </div>
     </div>
-  )
+  );
 }

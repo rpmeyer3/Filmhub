@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db import connection
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import IntegrityError
 from .models import Movie, UserFavorite, MovieReview, PaymentCard
 from .serializers import MovieSerializer, UserFavoriteSerializer, MovieReviewSerializer, PaymentCardSerializer
 
@@ -307,36 +308,41 @@ class PaymentCardDetailView(APIView):
     
     def delete(self, request, card_id):
         try:
+            print("[DEBUG] PaymentCard DELETE endpoint hit")  # keep for visibility
             supabase_id = request.query_params.get('supabase_id')
-            
             if not supabase_id:
-                return Response(
-                    {'error': 'supabase_id is required'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Get card and verify ownership
+                return Response({'error': 'supabase_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
             try:
                 card = PaymentCard.objects.get(id=card_id, user_id=supabase_id)
             except PaymentCard.DoesNotExist:
-                return Response(
-                    {'error': 'Payment card not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            
-            card.delete()
-            
-            return Response({
-                'success': True,
-                'message': 'Payment card deleted successfully'
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response(
-                {'error': f'Failed to delete payment card: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                return Response({'error': 'Payment card not found'}, status=status.HTTP_404_NOT_FOUND)
 
+            # ✅ correct table + correct id param
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT 1
+                    FROM public.bookings
+                    WHERE payment_card_id = %s
+                    LIMIT 1
+                    """,
+                    [card.id]
+                )
+                in_use = cursor.fetchone() is not None
+
+            if in_use:
+                return Response(
+                    {'success': False, 'error': 'This card is linked to existing bookings and cannot be deleted.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            card.delete()
+            return Response({'success': True, 'message': 'Payment card deleted successfully'}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"[ERROR] PaymentCard delete failed: {e}")
+            return Response({'error': 'Failed to delete payment card'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AdminMovieView(APIView):
     def post(self, request):
