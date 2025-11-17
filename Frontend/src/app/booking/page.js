@@ -495,8 +495,8 @@ export default function BookingPage() {
                       </div>
                       <button
                         type="button"
-                        className="text-blue-600 hover:text-blue-800 text-sm underline"
-                        onClick={() => router.push("/payment")}
+                        className="text-sm text-blue-600 hover:underline"
+                        onClick={() => router.push("/payment-methods")}
                       >
                         Manage
                       </button>
@@ -510,8 +510,8 @@ export default function BookingPage() {
                   </p>
                   <button
                     type="button"
-                    className="mt-2 inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                    onClick={() => router.push("/payment")}
+                    onClick={() => router.push("/payment-methods")}
+                    className="mt-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Add a Payment Method
                   </button>

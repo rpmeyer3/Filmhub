@@ -147,12 +147,23 @@ class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=6, decimal_places=2)
     seats = models.ManyToManyField(Seat)
+    
     booking_time = models.DateTimeField(auto_now_add=True)
-    payment_card = models.ForeignKey(PaymentCard, on_delete=models.CASCADE)
+    
+    payment_card = models.ForeignKey(
+        PaymentCard,
+        on_delete=models.CASCADE,
+        db_column="payment_card_id",
+        related_name="bookings",       
+        null=True,                     
+        blank=True,
+    )
 
     class Meta:
         unique_together = ('user', 'id')
-        db_table = 'booking'
+        db_table = 'bookings'
+        managed = False
+        unique_together = ("user", "id")
     
 
     def reserve_seats(self, seat_list):
