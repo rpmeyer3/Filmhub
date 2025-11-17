@@ -3,7 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import MovieShow
 from django.db import connection
-
+from datetime import timedelta
+from django.utils import timezone
+from .models import SeatHold
+import uuid
 
 class UserBookingsView(APIView):
     """Get all bookings for a specific user"""
@@ -92,6 +95,64 @@ class UserBookingsView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
+def get_or_create_showtime_uuid(showtime_int_id):
+    """
+    Given a showtime_table.id (integer), return the corresponding UUID
+    from showtimes.id, creating it if needed (same logic as CreateBookingView).
+    """
+    with connection.cursor() as cursor:
+        # 1) Get base info from showtime_table
+        cursor.execute(
+            '''
+            SELECT movie_id, showroom_id, showtime, price
+            FROM showtime_table
+            WHERE id = %s
+            ''',
+            [showtime_int_id],
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError(f"showtime_table row {showtime_int_id} not found")
+
+        movie_id_int, showroom_uuid, showtime_dt, price = row
+
+        # 2) Try to find existing UUID showtime
+        cursor.execute(
+            '''
+            SELECT id FROM showtimes
+            WHERE movie_id = %s AND showroom_id = %s AND showtime = %s
+            ''',
+            [movie_id_int, showroom_uuid, showtime_dt],
+        )
+        existing = cursor.fetchone()
+        if existing:
+            return existing[0]
+
+        # 3) Create it if it doesn't exist
+        showtime_uuid = uuid.uuid4()
+        cursor.execute(
+            '''
+            INSERT INTO showtimes (
+                id, movie_id, showroom_id, showtime,
+                ticket_price_adult, ticket_price_child, ticket_price_senior,
+                available_seats, is_available
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ''',
+            [
+                showtime_uuid,
+                movie_id_int,
+                showroom_uuid,
+                showtime_dt,
+                12.00,
+                8.00,
+                10.00,
+                100,
+                True,
+            ],
+        )
+        return showtime_uuid
 
 class ShowtimeSeatsView(APIView):
     """Get all seats for a specific showtime with availability status"""
@@ -221,6 +282,20 @@ class ShowtimeSeatsView(APIView):
                         'capacity': capacity
                     }
                 }, status=status.HTTP_200_OK)
+            
+            # Cleanup expired holds, then load active holds
+            cursor.execute("DELETE FROM seat_holds WHERE expires_at <= NOW()")
+            cursor.execute("""
+                SELECT sh.seat_id::text, sh.user_id::text
+                FROM seat_holds sh
+                JOIN showtimes sht ON sh.showtime_id = sht.id
+                WHERE sht.movie_id = %s AND sht.showroom_id = %s AND sht.showtime = %s
+            """, [movie_id_int, showroom_uuid, showtime_dt])
+            active_holds = cursor.fetchall()
+
+            request_user = request.query_params.get('user_id')
+            held_by_others = {sid for (sid, holder) in active_holds if holder != str(request_user)}
+            unavailable_ids = booked_seat_ids | held_by_others
                 
         except Exception as e:
             import traceback
@@ -300,38 +375,42 @@ class CreateBookingView(APIView):
                         100, True  # Default availability
                     ])
                 
-               # Check if seats are already booked
-                placeholders = ','.join(['%s'] * len(seat_ids))
-                cursor.execute(f'''
-                    SELECT bs.seat_id::text
-                    FROM booking_seats bs
-                    WHERE bs.seat_id IN ({placeholders})
-                ''', seat_ids)
-                already_booked = {row[0] for row in cursor.fetchall()}
+                    # Check if seats are already booked
+                    placeholders = ','.join(['%s'] * len(seat_ids))
+                    cursor.execute(f'''
+                        SELECT bs.seat_id::text
+                        FROM booking_seats bs
+                        WHERE bs.seat_id IN ({placeholders})
+                    ''', seat_ids)
+                    already_booked = {row[0] for row in cursor.fetchall()}
 
-                # Also check if any of the selected seats are currently on hold (by another user)
-                user_id_str = str(user_id)
-                cursor.execute(f'''
-                    SELECT sh.seat_id::text, sh.user_id::text
-                    FROM seat_holds sh
-                    WHERE sh.seat_id IN ({placeholders})
-                    AND sh.expires_at > NOW()
-                ''', seat_ids)
-                active_holds = cursor.fetchall()
+                    # Clean up expired holds so they don't block
+                    cursor.execute("DELETE FROM seat_holds WHERE expires_at <= NOW()")
 
-                # filter out holds belonging to this same user
-                held_by_others = {
-                    seat_id for seat_id, holder in active_holds
-                    if holder != user_id_str
-                }
+                    # Also check if any of the selected seats are currently on hold (by another user)
+                    user_id_str = str(user_id)
+                    cursor.execute(f'''
+                        SELECT sh.seat_id::text, sh.user_id::text
+                        FROM seat_holds sh
+                        WHERE sh.seat_id IN ({placeholders})
+                        AND sh.expires_at > NOW()
+                    ''', seat_ids)
+                    active_holds = cursor.fetchall()
 
-                # Merge both sets of unavailable seats
-                unavailable_ids = already_booked | held_by_others
-                if unavailable_ids:
-                    return Response(
-                        {'error': 'Some of the selected seats are unavailable (booked or held by another user).'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    # filter out holds belonging to this same user
+                    held_by_others = {
+                        seat_id for seat_id, holder in active_holds
+                        if holder != user_id_str
+                    }
+
+                    # Merge both sets of unavailable seats
+                    unavailable_ids = already_booked | held_by_others
+                    if unavailable_ids:
+                        return Response(
+                            {'error': 'Some of the selected seats are unavailable (booked or held by another user).'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
                 
                 # Generate booking number with actual showtime ID embedded
                 booking_number = f"BK{datetime.now().strftime('%Y%m%d')}{str(showtime_id).zfill(4)}{uuid.uuid4().hex[:4].upper()}"
@@ -505,3 +584,108 @@ class CancelBookingView(APIView):
                 {'error': f'Failed to cancel booking: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class HoldSeatsView(APIView):
+    """
+    POST /api/seats/hold/
+    Body: { user_id: UUID, showtime_id: <int from showtime_table>, seat_ids: [uuid,...], minutes: 5? }
+    """
+    def post(self, request):
+        try:
+            data = request.data
+            user_id = str(data.get('user_id'))
+            showtime_int_id = data.get('showtime_id')
+            seat_ids = data.get('seat_ids', [])
+            minutes = int(data.get('minutes', 5))
+
+            if not user_id or not showtime_int_id or not seat_ids:
+                return Response({'error': 'user_id, showtime_id, seat_ids are required'}, status=400)
+
+            # showtime_int_id comes from frontend as "5" → convert to int
+            showtime_int_id = int(showtime_int_id)
+
+            # Map int showtime_table.id → UUID showtimes.id
+            showtime_uuid = get_or_create_showtime_uuid(showtime_int_id)
+
+            expires_at = timezone.now() + timedelta(minutes=minutes)
+
+            with connection.cursor() as cursor:
+                # 1) cleanup expired
+                cursor.execute("DELETE FROM seat_holds WHERE expires_at <= NOW()")
+
+                # 2) ensure unique index so we can upsert
+                cursor.execute("""
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (
+                            SELECT 1 FROM pg_indexes
+                            WHERE schemaname='public' AND indexname='uq_seat_holds_showtime_seat'
+                        ) THEN
+                            CREATE UNIQUE INDEX uq_seat_holds_showtime_seat
+                            ON seat_holds (showtime_id, seat_id);
+                        END IF;
+                    END$$;
+                """)
+
+                # 3) upsert holds seat-by-seat
+                for sid in seat_ids:
+                    cursor.execute("""
+                        INSERT INTO seat_holds (id, seat_id, user_id, showtime_id, expires_at, created_at)
+                        VALUES (gen_random_uuid(), %s, %s, %s, %s, NOW())
+                        ON CONFLICT (showtime_id, seat_id)
+                        DO UPDATE SET
+                            user_id = CASE
+                                WHEN seat_holds.user_id = EXCLUDED.user_id OR seat_holds.expires_at <= NOW()
+                                THEN EXCLUDED.user_id
+                                ELSE seat_holds.user_id
+                            END,
+                            expires_at = CASE
+                                WHEN seat_holds.user_id = EXCLUDED.user_id OR seat_holds.expires_at <= NOW()
+                                THEN EXCLUDED.expires_at
+                                ELSE seat_holds.expires_at
+                            END;
+                    """, [str(sid), user_id, str(showtime_uuid), expires_at])
+
+            return Response({'success': True, 'expires_at': expires_at.isoformat()}, status=200)
+
+        except Exception as e:
+            import traceback; print(traceback.format_exc())
+            return Response({'error': str(e)}, status=500)        
+    
+class ReleaseSeatHoldsView(APIView):
+    """
+    POST /api/seats/release/
+    Body: { user_id: UUID, showtime_id: <int from showtime_table>, seat_ids?: [uuid,...] }
+    """
+    def post(self, request):
+        try:
+            data = request.data
+            user_id = str(data.get('user_id'))
+            showtime_int_id = data.get('showtime_id')
+            seat_ids = data.get('seat_ids', None)
+
+            if not user_id or not showtime_int_id:
+                return Response({'error': 'user_id and showtime_id are required'}, status=400)
+
+            showtime_int_id = int(showtime_int_id)
+            showtime_uuid = get_or_create_showtime_uuid(showtime_int_id)
+
+            with connection.cursor() as cursor:
+                if seat_ids:
+                    placeholders = ','.join(['%s'] * len(seat_ids))
+                    cursor.execute(f"""
+                        DELETE FROM seat_holds
+                        WHERE user_id = %s AND showtime_id = %s AND seat_id IN ({placeholders})
+                    """, [user_id, str(showtime_uuid), *seat_ids])
+                else:
+                    cursor.execute("""
+                        DELETE FROM seat_holds
+                        WHERE user_id = %s AND showtime_id = %s
+                    """, [user_id, str(showtime_uuid)])
+
+            return Response({'success': True}, status=200)
+
+        except Exception as e:
+            import traceback; print(traceback.format_exc())
+            return Response({'error': str(e)}, status=500)

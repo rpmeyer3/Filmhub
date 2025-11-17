@@ -2,9 +2,20 @@ from django.urls import path
 from . import views
 from .health import HealthCheckView
 from .supabase_views import SupabaseMoviesView, SupabaseMovieDetailView, SupabaseStatsView
-from .seat_views import ShowtimeSeatsView, CreateBookingView, UserBookingsView, CancelBookingView
+from .seat_views import (ShowtimeSeatsView,
+                        CreateBookingView, 
+                        UserBookingsView,
+                        CancelBookingView,
+                        HoldSeatsView, 
+                        ReleaseSeatHoldsView)
 
 urlpatterns = [
+
+    #seat hold and release endpoints
+    path('seats/hold/', HoldSeatsView.as_view(), name='hold-seats'),
+    path('seats/release/', ReleaseSeatHoldsView.as_view(), name='release-seat-holds'),
+
+
 
     # Health check
     path('health/', HealthCheckView.as_view(), name='health-check'),

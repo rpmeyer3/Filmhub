@@ -25,13 +25,51 @@ export default function SeatMap({
     setSelectedSeats([]);
   }, [maxSeats]);
 
+  useEffect(() => {
+    // need a logged-in user and a showtime to hold seats
+    if (!userId || !showtimeId) return;
+
+    const seatIds = selectedSeats.map((s) => s.id);
+    if (seatIds.length === 0) return;
+
+    const controller = new AbortController();
+
+    const holdSeats = async () => {
+      try {
+        await fetch("http://127.0.0.1:8000/api/seats/hold/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            showtime_id: showtimeId,
+            seat_ids: seatIds,
+            minutes: 5, // hold for 5 minutes
+          }),
+          signal: controller.signal,
+        });
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error holding seats:", err);
+        }
+      }
+    };
+
+    holdSeats();
+
+    // cleanup if component unmounts
+    return () => controller.abort();
+  }, [selectedSeats, userId, showtimeId]);
+
   const fetchSeats = async () => {
     try {
       setLoading(true);
-      const q = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/${q}`
-      );
+      const url = userId
+        ? `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/?user_id=${userId}`
+        : `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/`;
+
+      const response = await fetch(url);
       const data = await response.json();
 
       if (data.success) {
