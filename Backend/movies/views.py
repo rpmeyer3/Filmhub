@@ -1023,17 +1023,10 @@ class SendPromotionEmailView(APIView):
                 emails_sent = 0
                 failed_emails = []
                 
-                # Try to use Resend for real email sending, fallback to console
+                # Use Django's built-in email system (configured for Gmail SMTP)
+                from django.core.mail import EmailMultiAlternatives
+                from django.conf import settings
                 import os
-                resend_api_key = os.getenv('RESEND_API_KEY')
-                use_resend = resend_api_key and resend_api_key != 'your-resend-api-key-here'
-                
-                # For demo purposes, send all test emails to the verified Resend account email
-                RESEND_VERIFIED_EMAIL = "rpmeyer3@outlook.com"
-                
-                if use_resend:
-                    import resend
-                    resend.api_key = resend_api_key
                 
                 for user in subscribed_users:
                     try:
@@ -1117,41 +1110,22 @@ The Film-Hub Team
 To unsubscribe from promotional emails, please visit your profile settings.
                         '''
                         
-                        if use_resend:
-                            # Send real email via Resend (to verified email for testing)
-                            try:
-                                # Add note in subject that this is a test email for the actual recipient
-                                test_subject = f"[TEST for {user_email}] {subject}"
-                                
-                                # Add recipient info to the email body
-                                test_html = html_message.replace(
-                                    f"<p>Hello {first_name},</p>",
-                                    f"<p><strong>TEST EMAIL - Intended for: {user_email}</strong></p><p>Hello {first_name},</p>"
-                                )
-                                
-                                params = {
-                                    "from": "Film-Hub <rpmeyer3@outlook.com>",  # Use verified email as sender
-                                    "to": [RESEND_VERIFIED_EMAIL],  # Send to verified email only
-                                    "subject": test_subject,
-                                    "html": test_html,
-                                    "text": f"[TEST for {user_email}]\n\n{text_message}",
-                                }
-                                resend.Emails.send(params)
-                                print(f"✓ Sent test email to {RESEND_VERIFIED_EMAIL} (for user: {user_email}) via Resend")
-                            except Exception as resend_error:
-                                # If Resend fails, fall back to console
-                                print(f"⚠️ Resend failed ({str(resend_error)}), falling back to console mode")
-                                print(f"\n{'='*60}")
-                                print(f"PROMOTIONAL EMAIL (Console Mode)")
-                                print(f"{'='*60}")
-                                print(f"To: {user_email}")
-                                print(f"Subject: {subject}")
-                                print(f"\n{text_message}")
-                                print(f"{'='*60}\n")
-                        else:
-                            # Fallback to console output for development
+                        # Send email using Django's email system (Gmail SMTP)
+                        try:
+                            msg = EmailMultiAlternatives(
+                                subject=subject,
+                                body=text_message,
+                                from_email=settings.DEFAULT_FROM_EMAIL,
+                                to=[user_email]
+                            )
+                            msg.attach_alternative(html_message, "text/html")
+                            msg.send(fail_silently=False)
+                            print(f"✓ Sent email to {user_email} via Gmail SMTP")
+                        except Exception as email_error:
+                            # If email fails, log to console
+                            print(f"⚠️ Failed to send email to {user_email}: {str(email_error)}")
                             print(f"\n{'='*60}")
-                            print(f"PROMOTIONAL EMAIL (Console Mode)")
+                            print(f"PROMOTIONAL EMAIL (Console Fallback)")
                             print(f"{'='*60}")
                             print(f"To: {user_email}")
                             print(f"Subject: {subject}")
