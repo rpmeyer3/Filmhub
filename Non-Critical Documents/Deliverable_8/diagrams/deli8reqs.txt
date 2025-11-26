@@ -1,0 +1,93 @@
+CSCI 4050/6050 — Software Engineering
+Term Project — Deliverable 7 (Sprint 3)
+1) Introduction
+For this deliverable, you will implement Sprint 3 user stories:
+- Complete part of the Admin stories and the Customer Booking stories.
+- Integrate Sprint 1 & 2 work with your Sprint 3 code; previously delivered features should still
+function.
+- Checkout is not required in this sprint.
+2) Submission & Demo
+- Team Lead submission: Upload one compressed file (source code) to the eLC assignment folder
+before your demo time.
+- Demo: At least two team members must demonstrate Sprints 1, 2, and 3 to the instructor/TA. The
+Team Lead must sign up for a demo slot using the provided schedule link on the content page.
+Demo duration: 10 minutes.
+3) Requirements
+Sprint 3 Backlog Stories
+• A. Administrator
+• Admin Home Page
+• Add Movie
+• Schedule a Movie (Add a showtime)
+• Add a Promotion
+• Send a Promotion (email only to users who opt in to promotions)
+• B. Users’ Portal
+• View Movie Info (cast, director, producer, synopsis, poster/trailer image, trailer video, and
+MPAA rating)
+• See Available Showtimes for a selected movie
+• Select a Showtime to begin booking
+• Start Booking: Enter the number of tickets and the age category for each ticket
+• Seat Selection: Choose seats for those tickets (enforce availability)
+Clarifications & Constraints:
+- Prepare test data for at least 3 showrooms (distinct identifiers, capacities).
+- Scheduling conflicts must be prevented (no two movies at the same date/time in the same
+showroom).
+- Promotions: all required fields (promo code, start date, end date, discount %) must be validated;
+email only to users who subscribed.
+- In case of ambiguity, consult the project document or ask during office hours / in-class Scrum
+meetings. Avoid questions by email, unless you have an urgent clarification request (3-4 lines).
+Rubric (100 points)
+1) Admin Portal — 45 pts
+1.1 Admin Home Page (3 pts)
+- Shows a clear main menu with: Manage Movies, Manage Promotions, Manage Users, and
+Manage Showtimes ( separate or under Manage Movies).
+- Navigation works; labels are consistent.
+1.2 Add Movie (12 pts)
+- Form completeness (6): all movie attributes are required and validated.
+- Persistence (6): saved with correct attributes; visible later in Admin and User portals.
+1.3 Schedule a Movie (20 pts)
+- Add showtime(s) for a chosen movie, specifying showroom and date/time (4).
+- Usability (6): simple flow to add and view showtimes.
+- Three showroom test data prepared and used (3).
+- Conflict prevention (7): cannot schedule two movies at the same date/time in the same
+showroom; clear error feedback.
+1.4 Promotions (10 pts)
+- Create promotion: All required fields validated (promo code, start/end date, discount %) (3).
+- Email Promotion: Send to subscribed users only (2).
+2) Users’ Portal — 25 pts
+2.1 Showtimes Visibility (2 pts)
+- Newly scheduled showtimes appear correctly for corresponding movies.
+2.2 Start Booking (3 pts)
+- From a movie page, users see showtimes and can select one to begin booking.
+2.3 Ticket & Seat Map (10 pts)
+- User can enter ticket count and age categories; system shows a seat map for the selected
+showtime.
+2.4 Seat Selection (10 pts)
+- User can select seats; system enforces availability and prevents double-booking and invalid
+selections.
+3) Non-Functional, Design, and Quality — 30 pts
+3.1 Usability (5 pts)
+- Clear look & feel, helpful prompts, good error messages, and confirmation for
+destructive/irreversible actions.
+3.2 Validity & Integrity (3 pts for every miss in Part A and B)
+- Client/server validation for forms; integrity preserved (e.g., no orphan data, consistent showtimeseat constraints).
+3.3 Architecture & Readiness (15 pts)
+- Project follows MVC or layered architecture; layers decoupled via interfaces/services; team can
+explain the flow during demo.
+3.4 Test Cases Readiness (10 pts):
+- Seed data and scripts ready for demo (e.g., 3 showrooms, sample movies, show times, users).
+- Functional test cases prepared for: scheduling conflicts, showtime visibility, seat availability, and
+booking flow (no payment).
+3.5 Should not exceed demo duration. (- 5 pts if exceeded)
+Demo Checklist
+- Add a movie → confirm persistence → visible on User portal.
+- Add showtimes (use 3 showrooms) → verify no conflicts → visible to users.
+- Create a promotion (valid fields) → send email to only subscribed users (show evidence/log).
+- On User portal: pick a movie → choose a showtime → enter tickets/ages → seat map → select
+seats → confirm selection. Test with selections > number of tickets, test with backward navigation.
+- Prepare to show how validation with valid and invalid input will be presented.
+Notes
+- Checkout (payment, confirmation, confirmation email) is NOT required in Sprint 3.
+- Use meaningful seed data so your demo is smooth.- Prepare your testing data and testing path,
+and ensure that your demo will not exceed demo time (10 minutes).
+- If an acceptance criterion is unclear, ask early.
+- Keep UI labels and navigation consistent to avoid demo friction.

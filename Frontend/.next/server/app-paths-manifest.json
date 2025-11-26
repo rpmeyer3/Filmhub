@@ -1,10 +1,8 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
-  "/login/page": "app/login/page.js",
-  "/register/page": "app/register/page.js",
-  "/payment-methods/page": "app/payment-methods/page.js",
-  "/profile/page": "app/profile/page.js",
+  "/movie/[movieId]/page": "app/movie/[movieId]/page.js",
+  "/admin/schedule/page": "app/admin/schedule/page.js",
+  "/booking/page": "app/booking/page.js",
   "/admin/page": "app/admin/page.js",
-  "/admin/promotions/page": "app/admin/promotions/page.js"
+  "/profile/page": "app/profile/page.js"
 }

@@ -125,7 +125,7 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            Welcome to Our Film-Hub for Deliverable 6!
+            Welcome to Film-Hub!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Your premier destination for movie tickets and entertainment. Browse our selection of films and book your seats today.

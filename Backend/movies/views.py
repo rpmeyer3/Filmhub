@@ -674,6 +674,29 @@ class AdminMovieShowListView(APIView):
             data = request.data
             
             with connection.cursor() as cursor:
+                # CONFLICT PREVENTION: Check if showroom is already booked at this time
+                cursor.execute('''
+                    SELECT COUNT(*) 
+                    FROM showtime_table 
+                    WHERE showroom_id = %s 
+                    AND showtime = %s
+                ''', [
+                    data.get('showroom_id'),
+                    data.get('showtime')
+                ])
+                
+                conflict_count = cursor.fetchone()[0]
+                
+                if conflict_count > 0:
+                    # Get showroom name for better error message
+                    cursor.execute('SELECT name FROM showrooms WHERE id = %s', [data.get('showroom_id')])
+                    showroom_name = cursor.fetchone()[0]
+                    
+                    return Response({
+                        'success': False,
+                        'error': f'Scheduling conflict: {showroom_name} is already booked at this time. Please choose a different time or showroom.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
                 cursor.execute('''
                     INSERT INTO showtime_table (movie_id, showroom_id, showtime, price, is_now_showing)
                     VALUES (%s, %s, %s, %s, %s)
@@ -750,6 +773,31 @@ class AdminMovieShowDetailView(APIView):
             data = request.data
             
             with connection.cursor() as cursor:
+                # CONFLICT PREVENTION: Check if showroom is already booked at this time (excluding current showtime)
+                cursor.execute('''
+                    SELECT COUNT(*) 
+                    FROM showtime_table 
+                    WHERE showroom_id = %s 
+                    AND showtime = %s
+                    AND id != %s
+                ''', [
+                    data.get('showroom_id'),
+                    data.get('showtime'),
+                    showtime_id
+                ])
+                
+                conflict_count = cursor.fetchone()[0]
+                
+                if conflict_count > 0:
+                    # Get showroom name for better error message
+                    cursor.execute('SELECT name FROM showrooms WHERE id = %s', [data.get('showroom_id')])
+                    showroom_name = cursor.fetchone()[0]
+                    
+                    return Response({
+                        'success': False,
+                        'error': f'Scheduling conflict: {showroom_name} is already booked at this time. Please choose a different time or showroom.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
                 cursor.execute('''
                     UPDATE showtime_table
                     SET movie_id = %s, showroom_id = %s, showtime = %s, price = %s, is_now_showing = %s
