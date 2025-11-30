@@ -149,31 +149,6 @@ export default function AdminPage() {
               </p>
             </Link>
           </div>
-
-          {/* Quick Stats */}
-          <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Quick Stats
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-blue-600">--</p>
-                <p className="text-gray-600 mt-1">Active Movies</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-green-600">--</p>
-                <p className="text-gray-600 mt-1">Today's Showtimes</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-purple-600">--</p>
-                <p className="text-gray-600 mt-1">Active Promotions</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-orange-600">--</p>
-                <p className="text-gray-600 mt-1">Total Users</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </AdminRoute>
