@@ -1,8 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/movie/[movieId]/page": "app/movie/[movieId]/page.js",
-  "/admin/schedule/page": "app/admin/schedule/page.js",
-  "/booking/page": "app/booking/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/profile/page": "app/profile/page.js"
-}
