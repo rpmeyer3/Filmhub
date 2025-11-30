@@ -466,7 +466,7 @@ export default function Profile() {
                               className="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow"
                             >
                               <div className="flex items-start space-x-4">
-                                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-3 text-white">
+                                <div className="bg-linear-to-r from-indigo-500 to-purple-600 rounded-lg p-3 text-white">
                                   <svg
                                     className="h-8 w-8"
                                     fill="none"
@@ -584,7 +584,7 @@ export default function Profile() {
                     >
                       <div className="md:flex">
                         {/* Movie Poster */}
-                        <div className="md:flex-shrink-0">
+                        <div className="md:shrink-0">
                           <img
                             className="h-48 w-full object-cover md:w-48"
                             src={booking.poster_url || "/placeholder-movie.jpg"}

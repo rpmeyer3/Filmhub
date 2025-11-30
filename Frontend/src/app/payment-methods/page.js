@@ -470,7 +470,7 @@ export default function PaymentMethods() {
                     className="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-3 text-white">
+                      <div className="bg-linear-to-r from-indigo-500 to-purple-600 rounded-lg p-3 text-white">
                         <svg
                           className="h-8 w-8"
                           fill="none"
