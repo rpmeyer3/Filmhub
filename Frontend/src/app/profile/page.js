@@ -40,6 +40,33 @@ export default function Profile() {
     }
   }, [user, authLoading, router]);
 
+  // Fetch payment cards
+  useEffect(() => {
+    if (user) {
+      fetchCards();
+    }
+  }, [user]);
+
+  const fetchCards = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:8000/api/payment-cards/?supabase_id=${user.id}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setSavedCards(data.cards);
+      } else {
+        console.error("Failed to fetch cards:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching cards:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Load user data when component mounts
   useEffect(() => {
     if (user) {
@@ -50,7 +77,7 @@ export default function Profile() {
         receivePromotions: user.user_metadata?.receive_promotions || false,
       });
       fetchBookings();
-      fetchSavedCards();
+      setSavedCards();
     }
   }, [user]);
 
@@ -78,25 +105,33 @@ export default function Profile() {
     }
   };
 
-  const fetchSavedCards = async () => {
-    if (!user) return;
-    try {
-      setLoadingCards(true);
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/payment_cards/?supabase_id=${user.id}`
-      );
-      const data = await res.json();
-      if (data.success) {
-        setSavedCards(data.cards);
-      } else {
-        console.error("Failed to fetch cards:", data.error);
+  // Fetch saved payment cards
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchCards = async () => {
+      try {
+        setLoadingCards(true);
+
+        const response = await fetch(
+          `http://localhost:8000/api/payment-cards/?supabase_id=${user.id}`
+        );
+        const data = await response.json();
+
+        if (data.success) {
+          setSavedCards(data.cards); // 👈 important
+        } else {
+          console.error("Failed to fetch cards:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching cards:", error);
+      } finally {
+        setLoadingCards(false);
       }
-    } catch (err) {
-      console.error("Error fetching cards:", err);
-    } finally {
-      setLoadingCards(false);
-    }
-  };
+    };
+
+    fetchCards();
+  }, [user?.id]);
 
   const formatDateTime = (isoString) => {
     if (!isoString) return "N/A";
@@ -400,14 +435,15 @@ export default function Profile() {
                       <p className="text-sm text-gray-500">
                         Loading payment methods…
                       </p>
-                    ) : savedCards.length > 0 ? (
-                      <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div>
-                          <p className="text-green-800 font-medium">
-                            You have {savedCards.length} saved{" "}
-                            {savedCards.length === 1 ? "card" : "cards"}.
-                          </p>
-                          {savedCards[0] && (
+                    ) : Array.isArray(savedCards) && savedCards.length > 0 ? (
+                      <>
+                        {/* Summary */}
+                        <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div>
+                            <p className="text-green-800 font-medium">
+                              You have {savedCards.length} saved{" "}
+                              {savedCards.length === 1 ? "card" : "cards"}.
+                            </p>
                             <p className="text-sm text-green-700">
                               Default shown: {savedCards[0].brand} ••••{" "}
                               {savedCards[0].last_four} (exp{" "}
@@ -419,29 +455,94 @@ export default function Profile() {
                               })}
                               )
                             </p>
-                          )}
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => router.push("/payment")}
-                          className="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-                        >
-                          Manage
-                        </button>
-                      </div>
+
+                        {/* List of all cards */}
+                        <div className="mt-4 space-y-4">
+                          {savedCards.map((card) => (
+                            <div
+                              key={card.id}
+                              className="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex items-start space-x-4">
+                                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-3 text-white">
+                                  <svg
+                                    className="h-8 w-8"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                    />
+                                  </svg>
+                                </div>
+
+                                <div>
+                                  <p className="font-semibold text-gray-900">
+                                    {card.brand}
+                                  </p>
+                                  <p className="text-gray-600">
+                                    •••• •••• •••• {card.last_four}
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    {card.cardholder_name}
+                                  </p>
+                                  <p className="text-xs text-gray-400">
+                                    Expires:{" "}
+                                    {new Date(
+                                      card.expiration_date
+                                    ).toLocaleDateString("en-US", {
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     ) : (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <p className="text-yellow-800">
-                          You don’t have any saved payment methods yet. You’ll
-                          need to add one before booking.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => router.push("/payment")}
-                          className="mt-2 inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                        >
-                          Add a Payment Method
-                        </button>
+                      // Empty state
+                      <div className="bg-white shadow rounded-lg p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                          Saved Cards
+                        </h2>
+
+                        <div className="text-center py-8">
+                          <svg
+                            className="mx-auto h-12 w-12 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                            />
+                          </svg>
+
+                          <p className="mt-2 text-gray-600">
+                            No payment cards saved yet
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              router.push("/payment-methods?add=1")
+                            }
+                            className="mt-4 inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                          >
+                            Add a Payment Method
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
