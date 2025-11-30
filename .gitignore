@@ -57,15 +57,9 @@ local_settings.py
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Local CSV
 Non-Critical Documents/db_copies/Movies_rows.csv
-Frontend/.next/app-build-manifest.json
-Frontend/.next/app-build-manifest.json
-Frontend/.next/app-build-manifest.json
-Frontend/.next/cache/webpack/client-development/0.pack.gz
-Frontend/.next/cache/webpack/client-development/1.pack.gz
-Frontend/.next/cache/webpack/client-development/2.pack.gz
-Frontend/.next/cache/webpack/client-development/3.pack.gz
-Frontend/.next/cache/webpack/client-development/4.pack.gz
-Frontend/.next/cache/webpack/client-development/5.pack.gz
-/Frontend/.next/cache
-/Frontend/.next/cache
+
+# Next.js build files
+/Frontend/.next/
