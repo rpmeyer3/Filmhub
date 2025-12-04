@@ -21,7 +21,6 @@ class UserBookingsView(APIView):
                 )
             
             with connection.cursor() as cursor:
-                # Get all bookings for this user with simplified query
                 cursor.execute('''
                     SELECT 
                         b.id,
@@ -48,18 +47,15 @@ class UserBookingsView(APIView):
                 
                 bookings_raw = cursor.fetchall()
                 
-                # Now fetch movie and showroom details separately
                 bookings = []
                 for row in bookings_raw:
                     booking_id, booking_number, booking_date, total_amount, num_adult, num_child, num_senior, booking_status, showtime, movie_id, seats = row
                     
-                    # Get movie details
                     cursor.execute('SELECT "Title", "Poster_img_URL" FROM "Movies" WHERE id = %s', [movie_id])
                     movie_data = cursor.fetchone()
                     movie_title = movie_data[0] if movie_data else 'Unknown Movie'
                     poster_url = movie_data[1] if movie_data else None
                     
-                    # Get showroom details from showtime
                     cursor.execute('SELECT sr.name FROM showtimes sht JOIN showrooms sr ON sht.showroom_id = sr.id WHERE sht.id IN (SELECT showtime_id FROM bookings WHERE id = %s)', [booking_id])
                     showroom_data = cursor.fetchone()
                     showroom_name = showroom_data[0] if showroom_data else 'Unknown Theater'
@@ -102,7 +98,6 @@ def get_or_create_showtime_uuid(showtime_int_id):
     from showtimes.id, creating it if needed (same logic as CreateBookingView).
     """
     with connection.cursor() as cursor:
-        # 1) Get base info from showtime_table
         cursor.execute(
             '''
             SELECT movie_id, showroom_id, showtime, price
@@ -117,7 +112,6 @@ def get_or_create_showtime_uuid(showtime_int_id):
 
         movie_id_int, showroom_uuid, showtime_dt, price = row
 
-        # 2) Try to find existing UUID showtime
         cursor.execute(
             '''
             SELECT id FROM showtimes
@@ -129,7 +123,6 @@ def get_or_create_showtime_uuid(showtime_int_id):
         if existing:
             return existing[0]
 
-        # 3) Create it if it doesn't exist
         showtime_uuid = uuid.uuid4()
         cursor.execute(
             '''
@@ -159,7 +152,6 @@ class ShowtimeSeatsView(APIView):
     def get(self, request, showtime_id):
         try:
             with connection.cursor() as cursor:
-                # Get showtime and showroom info
                 cursor.execute('''
                     SELECT 
                         st.showroom_id,
@@ -180,7 +172,6 @@ class ShowtimeSeatsView(APIView):
                 
                 showroom_id, rows, seats_per_row, capacity = showtime_info
                 
-                # Get all seats for this showroom
                 cursor.execute('''
                     SELECT 
                         s.id,
@@ -193,10 +184,6 @@ class ShowtimeSeatsView(APIView):
                 
                 all_seats = cursor.fetchall()
                 
-                # Get booked seats for this specific showtime
-                # Note: Since showtime_table uses integer IDs and booking_seats expects UUIDs,
-                # and there are no bookings yet, we'll return empty list for now
-                # TODO: Fix this when implementing actual booking creation
 
                 
                 cursor.execute("""
@@ -248,19 +235,15 @@ class ShowtimeSeatsView(APIView):
                     """, [showtime_id, showtime_id, showtime_id])
                     active_holds = cursor.fetchall()
 
-                    # exclude the requesting user's own holds
                     held_by_others = {
                         seat_id for (seat_id, holder) in active_holds
                         if not current_user_id or holder != str(current_user_id)
                     }
                 except Exception:
-                    # if seat_holds table doesn't exist yet
                     held_by_others = set()
 
-                # --- Combine booked + held seats ---
                 unavailable_ids = booked_seat_ids | held_by_others
 
-                # --- Build final seat list ---
                 seats = []
                 for seat_id, seat_row, seat_number in all_seats:
                     is_available = str(seat_id) not in unavailable_ids
@@ -283,7 +266,6 @@ class ShowtimeSeatsView(APIView):
                     }
                 }, status=status.HTTP_200_OK)
             
-            # Cleanup expired holds, then load active holds
             cursor.execute("DELETE FROM seat_holds WHERE expires_at <= NOW()")
             cursor.execute("""
                 SELECT sh.seat_id::text, sh.user_id::text
@@ -336,7 +318,6 @@ class CreateBookingView(APIView):
                 )
             
             with connection.cursor() as cursor:
-                # Get showtime details from showtime_table
                 cursor.execute('''
                     SELECT movie_id, showroom_id, showtime, price 
                     FROM showtime_table 
@@ -350,7 +331,6 @@ class CreateBookingView(APIView):
                     )
                 movie_id_int, showroom_uuid, showtime_dt, price = showtime_data
                 
-                # Check if a corresponding record exists in the UUID-based showtimes table
                 cursor.execute('''
                     SELECT id FROM showtimes 
                     WHERE movie_id = %s AND showroom_id = %s AND showtime = %s
@@ -360,7 +340,6 @@ class CreateBookingView(APIView):
                 if existing_showtime:
                     showtime_uuid = existing_showtime[0]
                 else:
-                    # Create a new record in showtimes table to satisfy foreign key
                     showtime_uuid = uuid.uuid4()
                     cursor.execute('''
                         INSERT INTO showtimes (
@@ -375,7 +354,6 @@ class CreateBookingView(APIView):
                         100, True  # Default availability
                     ])
                 
-                    # Check if seats are already booked
                     placeholders = ','.join(['%s'] * len(seat_ids))
                     cursor.execute(f'''
                         SELECT bs.seat_id::text
@@ -384,10 +362,8 @@ class CreateBookingView(APIView):
                     ''', seat_ids)
                     already_booked = {row[0] for row in cursor.fetchall()}
 
-                    # Clean up expired holds so they don't block
                     cursor.execute("DELETE FROM seat_holds WHERE expires_at <= NOW()")
 
-                    # Also check if any of the selected seats are currently on hold (by another user)
                     user_id_str = str(user_id)
                     cursor.execute(f'''
                         SELECT sh.seat_id::text, sh.user_id::text
@@ -397,13 +373,11 @@ class CreateBookingView(APIView):
                     ''', seat_ids)
                     active_holds = cursor.fetchall()
 
-                    # filter out holds belonging to this same user
                     held_by_others = {
                         seat_id for seat_id, holder in active_holds
                         if holder != user_id_str
                     }
 
-                    # Merge both sets of unavailable seats
                     unavailable_ids = already_booked | held_by_others
                     if unavailable_ids:
                         return Response(
@@ -412,15 +386,10 @@ class CreateBookingView(APIView):
                         )
 
                 
-                # Generate booking number with actual showtime ID embedded
                 booking_number = f"BK{datetime.now().strftime('%Y%m%d')}{str(showtime_id).zfill(4)}{uuid.uuid4().hex[:4].upper()}"
                 
-                # Create booking
                 booking_id = uuid.uuid4()
                 
-                # Payment card ID schema mismatch: payment_cards table uses integer IDs
-                # but bookings table expects UUID. For now, we'll set to NULL.
-                # In production, this would need schema alignment.
                 payment_card_uuid = None
                 
                 cursor.execute('''
@@ -435,14 +404,12 @@ class CreateBookingView(APIView):
                     total_amount, num_adult, num_child, num_senior, 'confirmed', datetime.now()
                 ])
                 
-                # Create booking_seats records
                 for seat_id in seat_ids:
                     cursor.execute('''
                         INSERT INTO booking_seats (id, booking_id, seat_id, showtime_id)
                         VALUES (%s, %s, %s, %s)
                     ''', [uuid.uuid4(), booking_id, seat_id, showtime_uuid])
                 
-                # Email confirmation (optional - don't fail booking if this fails)
                 try:
                     if user_email:
                         email_subject = f'Booking Confirmation - {booking_number}'
@@ -475,7 +442,6 @@ Thank you for choosing our cinema!
                         print(f"Confirmation email sent to {user_email}")
                 except Exception as email_error:
                     print(f"Email send failed (non-critical): {str(email_error)}")
-                    # Don't fail the booking if email fails
                 
                 return Response({
                     'success': True,
@@ -501,7 +467,6 @@ class CancelBookingView(APIView):
             from datetime import datetime, timedelta
             
             with connection.cursor() as cursor:
-                # Get booking details
                 cursor.execute('''
                     SELECT 
                         b.id,
@@ -525,18 +490,15 @@ class CancelBookingView(APIView):
                 
                 booking_id, booking_number, booking_status, total_amount, user_id, showtime = booking
                 
-                # Check if booking is already cancelled
                 if booking_status == 'cancelled':
                     return Response(
                         {'error': 'This booking has already been cancelled'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
-                # Check if cancellation is allowed (60 minutes before showtime)
                 now = datetime.now()
                 showtime_dt = showtime
                 
-                # If showtime is timezone-aware, make now timezone-aware too
                 if showtime_dt.tzinfo is not None:
                     from django.utils import timezone
                     now = timezone.now()
@@ -550,14 +512,11 @@ class CancelBookingView(APIView):
                         'minutes_remaining': int(minutes_until_showtime)
                     }, status=status.HTTP_400_BAD_REQUEST)
                 
-                # Release the seats by deleting from booking_seats table
-                # This makes them available for other bookings
                 cursor.execute('''
                     DELETE FROM booking_seats
                     WHERE booking_id = %s
                 ''', [booking_id])
                 
-                # Update booking status to cancelled
                 cursor.execute('''
                     UPDATE bookings
                     SET status = 'cancelled',
@@ -565,8 +524,6 @@ class CancelBookingView(APIView):
                     WHERE id = %s
                 ''', [booking_id])
                 
-                # In a real system, you would process the refund here
-                # For now, we'll just return success with the refund amount
                 
                 return Response({
                     'success': True,
@@ -602,19 +559,15 @@ class HoldSeatsView(APIView):
             if not user_id or not showtime_int_id or not seat_ids:
                 return Response({'error': 'user_id, showtime_id, seat_ids are required'}, status=400)
 
-            # showtime_int_id comes from frontend as "5" → convert to int
             showtime_int_id = int(showtime_int_id)
 
-            # Map int showtime_table.id → UUID showtimes.id
             showtime_uuid = get_or_create_showtime_uuid(showtime_int_id)
 
             expires_at = timezone.now() + timedelta(minutes=minutes)
 
             with connection.cursor() as cursor:
-                # 1) cleanup expired
                 cursor.execute("DELETE FROM seat_holds WHERE expires_at <= NOW()")
 
-                # 2) ensure unique index so we can upsert
                 cursor.execute("""
                     DO $$
                     BEGIN
@@ -628,7 +581,6 @@ class HoldSeatsView(APIView):
                     END$$;
                 """)
 
-                # 3) upsert holds seat-by-seat
                 for sid in seat_ids:
                     cursor.execute("""
                         INSERT INTO seat_holds (id, seat_id, user_id, showtime_id, expires_at, created_at)

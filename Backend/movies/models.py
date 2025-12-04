@@ -24,11 +24,9 @@ class Movie(models.Model):
     category = ArrayField(models.TextField(), blank=True, null=True, db_column='Category')
     poster_url = models.URLField(blank=True, null=True, db_column='Poster_img_URL')
 
- # Models for cinemas, showrooms,showtimes, seats, booking, users
 
 
     
-# Model for ShowRoom
 
 class ShowRoom(models.Model):
     name = models.CharField(max_length=100, default='Showroom 1')
@@ -40,7 +38,6 @@ class ShowRoom(models.Model):
         return f"{self.name} (Capacity: {self.capacity})"
    
        
-# Model for MovieShow
 
 class MovieShow(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
@@ -55,11 +52,9 @@ class MovieShow(models.Model):
         ordering = ['-created_at']
         db_table = 'showtime_table'
 
-    # print method
     def __str__(self):
         return f"Show ID: {self.show_id} {self.movie} ({self.showtime})"
 
-    # returns listt of seat objects that are available
     def get_available_seats(self):
         seats = Seat.objects.filter(show=self, is_available = True)
         return seats
@@ -69,7 +64,6 @@ class MovieShow(models.Model):
         return seats
 
 
-# Model for Seats
 
 class Seat(models.Model):
     show = models.ForeignKey(MovieShow, on_delete=models.CASCADE)
@@ -81,7 +75,6 @@ class Seat(models.Model):
    
 
 
-# User Model builds off Django's User model to include payment cards and 
 
 class UserType(models.Model):
     user_type = models.CharField(max_length=10)
@@ -100,7 +93,6 @@ class User(AbstractUser):
     address = models.CharField(max_length=255, blank=True)
     status = models.PositiveSmallIntegerField(choices=USER_STATUS_OPTIONS, default=2, null=True)
 
-    # override groups and permissions to avoid reverse accessor clash
     groups = models.ManyToManyField(
         Group,
         related_name='custom_user_set',  # must be unique
@@ -116,13 +108,11 @@ class User(AbstractUser):
         help_text='Specific permissions for this user.',
         verbose_name='user permissions',
     )
-    # def add_card(self, ):
 
 
     
 
 
-# Payment card Model - Links to Supabase profiles via user_id
 class PaymentCard(models.Model):
     user_id = models.UUIDField(null=True, blank=True)  # Links to Supabase auth.users id / profiles table
     cardholder_name = models.CharField(max_length=100)
@@ -139,7 +129,6 @@ class PaymentCard(models.Model):
     
 
 
-# Model for Booking
 
 class Booking(models.Model):
     id = models.UUIDField(primary_key=True, default= uuid.uuid4, editable=False)
@@ -168,20 +157,15 @@ class Booking(models.Model):
 
     def reserve_seats(self, seat_list):
 
-       # Reserve the given seats for this booking
-     #  Updates availability and show is_full field
      
-        # Update seat table
         for seat in seat_list:
             if not seat.is_available:
                 raise ValueError(f"Seat {seat.number} is unavailable")
             seat.is_available = False
             seat.save()
         
-        # Add seats to booking
         self.seats.add(*seat_list)
 
-        # Check show is_full
         show = self.show
         if not show.seat_set.filter(is_available=True).exists():
             show.is_full = True
@@ -190,7 +174,6 @@ class Booking(models.Model):
         show.save()
     
     def return_seats(self, seat_list):
-         # Update seat table
         for seat in seat_list:
             seat.is_available = True
             seat.save()
@@ -210,7 +193,6 @@ class UserFavorite(models.Model):
         return f"{self.user.username} favorited movie {self.movie.title}"
 
 
-# Model for storing user reviews of movies
 class MovieReview(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -229,7 +211,6 @@ class MovieReview(models.Model):
         return f"{self.user.username} - {self.movie.title} ({self.rating}/5)"
 
 
-# Model for Promotions/Promo Codes
 class Promotion(models.Model):
     code = models.CharField(max_length=50, unique=True)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)])
@@ -257,8 +238,6 @@ class Promotion(models.Model):
 class SeatHold(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    # Note: we use raw UUIDs rather than FKs because your current seats/showtimes
-    # tables are being accessed via raw SQL. This avoids schema coupling.
     seat_id = models.UUIDField()       # references seats.id
     user_id = models.UUIDField()       # Supabase user UUID
     showtime_id = models.UUIDField()   # references showtimes.id (UUID version)

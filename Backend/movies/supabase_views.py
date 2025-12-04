@@ -19,11 +19,9 @@ def supabase_webhook(request):
         user_record = data.get('record')
 
         if event == 'INSERT' and user_record:
-            # Determine user type (example: based on email domain or a default)
             user_type_name = 'customer'  # change logic if needed
             user_type_obj, created = UserType.objects.get_or_create(user_type=user_type_name)
 
-            # Create the user
             User.objects.create(
                 supabase_id=user_record['id'],
                 email=user_record.get('email', ''),
@@ -39,7 +37,6 @@ class SupabaseMoviesView(APIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
-                # Query movies with all data from the Movies table directly
                 cursor.execute('''
                     SELECT DISTINCT
                         m.id,
@@ -63,7 +60,6 @@ class SupabaseMoviesView(APIView):
                 
                 rows = cursor.fetchall()
                 
-                # Convert to list of dictionaries
                 movies = []
                 for row in rows:
                     movie = {
@@ -103,7 +99,6 @@ class SupabaseMovieDetailView(APIView):
     def get(self, request, movie_id):
         try:
             with connection.cursor() as cursor:
-                # Get the specific movie with all data from Movies table directly
                 cursor.execute('''
                     SELECT 
                         id,
@@ -167,15 +162,12 @@ class SupabaseStatsView(APIView):
             with connection.cursor() as cursor:
                 stats = {}
                 
-                # Count movies
                 cursor.execute('SELECT COUNT(*) FROM "Movies";')
                 stats['total_movies'] = cursor.fetchone()[0]
                 
-                # Get running movies
                 cursor.execute('SELECT COUNT(*) FROM "Movies" WHERE "isRunning" = true;')
                 stats['running_movies'] = cursor.fetchone()[0]
                 
-                # Get coming soon movies
                 cursor.execute('SELECT COUNT(*) FROM "Movies" WHERE "isComingSoon" = true;')
                 stats['coming_soon_movies'] = cursor.fetchone()[0]
                 

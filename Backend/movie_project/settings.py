@@ -2,21 +2,16 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-key')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -26,7 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'movies',  # Our main app
+    'movies',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +55,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'movie_project.wsgi.application'
 
-# Database
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -73,7 +68,7 @@ DATABASES = {
 }
 
 
-# Password validation
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -89,23 +84,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-#User model 
+
 AUTH_USER_MODEL = 'movies.User'
 
-# Internationalization
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework settings
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -115,14 +108,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS settings
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:3002').split(',')
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
+CORS_ALLOW_ALL_ORIGINS = DEBUG  
 
-# Email settings - Using MailHog for local email testing
-# MailHog captures emails and displays them in a web interface
-# Web UI: http://localhost:8025
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
@@ -131,6 +120,3 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'Film-Hub <noreply@filmhub.com>'
 
-# OMDB API settings (deprecated - now using only Supabase Movies table)
-# OMDB_API_KEY = os.getenv('OMDB_API_KEY')
-# OMDB_BASE_URL = os.getenv('OMDB_BASE_URL', 'http://www.omdbapi.com/')

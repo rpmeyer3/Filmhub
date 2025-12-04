@@ -14,7 +14,6 @@ class MovieListView(APIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
-                # Query movies from Supabase Movies table
                 cursor.execute('''
                     SELECT 
                         id,
@@ -36,7 +35,6 @@ class MovieListView(APIView):
                     ORDER BY id;
                 ''')
                 
-                # Fetch column names from the cursor description
                 columns = [col[0] for col in cursor.description]
                 movies = [
                     dict(zip(columns, row))
@@ -60,7 +58,6 @@ class MovieDetailView(APIView):
     def get(self, request, movie_id):
         try:
             with connection.cursor() as cursor:
-                # Query single movie from Supabase Movies table
                 cursor.execute('''
                     SELECT 
                         id,
@@ -120,7 +117,6 @@ class MovieSearchView(APIView):
     def get(self, request, query):
         try:
             with connection.cursor() as cursor:
-                # Search movies in Supabase Movies table by title
                 search_query = f'%{query}%'
                 cursor.execute('''
                     SELECT 
@@ -182,7 +178,6 @@ class UserFavoritesView(generics.ListAPIView):
     serializer_class = UserFavoriteSerializer
     
     def get_queryset(self):
-        # For now, return all favorites (add authentication later)
         return UserFavorite.objects.all()
 
 
@@ -207,12 +202,10 @@ class MovieReviewsView(APIView):
         )
 
 
-# Payment Card Views
 class PaymentCardListCreateView(APIView):
     
     def get(self, request):
         try:
-            # Get supabase_id from query params (in production, use authentication)
             supabase_id = request.query_params.get('supabase_id')
             
             if not supabase_id:
@@ -221,7 +214,6 @@ class PaymentCardListCreateView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Get all cards for this user_id
             cards = PaymentCard.objects.filter(user_id=supabase_id)
             serializer = PaymentCardSerializer(cards, many=True)
             
@@ -239,7 +231,6 @@ class PaymentCardListCreateView(APIView):
     
     def post(self, request):
         try:
-            # Get supabase_id from request data
             supabase_id = request.data.get('supabase_id')
             
             if not supabase_id:
@@ -248,15 +239,12 @@ class PaymentCardListCreateView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Add user_id to the data
             data = request.data.copy()
             data['user_id'] = supabase_id
             
-            # Create serializer with data
             serializer = PaymentCardSerializer(data=data)
             
             if serializer.is_valid():
-                # Save the card
                 serializer.save()
                 return Response({
                     'success': True,
@@ -288,7 +276,6 @@ class PaymentCardDetailView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Get card and verify ownership
             try:
                 card = PaymentCard.objects.get(id=card_id, user_id=supabase_id)
             except PaymentCard.DoesNotExist:
@@ -318,7 +305,6 @@ class PaymentCardDetailView(APIView):
             except PaymentCard.DoesNotExist:
                 return Response({'error': 'Payment card not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            # ✅ correct table + correct id param
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
@@ -350,7 +336,6 @@ class AdminMovieView(APIView):
             with connection.cursor() as cursor:
                 data = request.data
                 
-                # Insert new movie into Supabase Movies table
                 cursor.execute('''
                     INSERT INTO "Movies" (
                         "Title", "Year", "Synopsis", "TrailerURL", "TrailerPicLink",
@@ -398,7 +383,6 @@ class AdminMovieView(APIView):
             with connection.cursor() as cursor:
                 data = request.data
                 
-                # Update movie in Supabase Movies table
                 cursor.execute('''
                     UPDATE "Movies"
                     SET 
@@ -674,7 +658,6 @@ class AdminMovieShowListView(APIView):
             data = request.data
             
             with connection.cursor() as cursor:
-                # CONFLICT PREVENTION: Check if showroom is already booked at this time
                 cursor.execute('''
                     SELECT COUNT(*) 
                     FROM showtime_table 
@@ -688,7 +671,6 @@ class AdminMovieShowListView(APIView):
                 conflict_count = cursor.fetchone()[0]
                 
                 if conflict_count > 0:
-                    # Get showroom name for better error message
                     cursor.execute('SELECT name FROM showrooms WHERE id = %s', [data.get('showroom_id')])
                     showroom_name = cursor.fetchone()[0]
                     
@@ -773,7 +755,6 @@ class AdminMovieShowDetailView(APIView):
             data = request.data
             
             with connection.cursor() as cursor:
-                # CONFLICT PREVENTION: Check if showroom is already booked at this time (excluding current showtime)
                 cursor.execute('''
                     SELECT COUNT(*) 
                     FROM showtime_table 
@@ -789,7 +770,6 @@ class AdminMovieShowDetailView(APIView):
                 conflict_count = cursor.fetchone()[0]
                 
                 if conflict_count > 0:
-                    # Get showroom name for better error message
                     cursor.execute('SELECT name FROM showrooms WHERE id = %s', [data.get('showroom_id')])
                     showroom_name = cursor.fetchone()[0]
                     
@@ -1013,7 +993,6 @@ class AdminPromotionDetailView(APIView):
 class SendPromotionEmailView(APIView):
     def post(self, request, promotion_id):
         try:
-            # Get promotion details
             with connection.cursor() as cursor:
                 cursor.execute('''
                     SELECT id, code, discount_percentage, start_date, end_date, is_active
@@ -1031,7 +1010,6 @@ class SendPromotionEmailView(APIView):
                 columns = [col[0] for col in cursor.description]
                 promotion = dict(zip(columns, row))
                 
-                # Get all users who subscribed for promotions from Supabase
                 from supabase import create_client
                 import os
                 
@@ -1044,8 +1022,6 @@ class SendPromotionEmailView(APIView):
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR
                     )
                 
-                # Query PostgreSQL directly for users who subscribed to promotions
-                # We need to join the profiles table with auth.users to get emails
                 cursor.execute('''
                     SELECT 
                         p.id,
@@ -1067,11 +1043,9 @@ class SendPromotionEmailView(APIView):
                         'emails_sent': 0
                     }, status=status.HTTP_200_OK)
                 
-                # Send email to each subscribed user
                 emails_sent = 0
                 failed_emails = []
                 
-                # Use Django's built-in email system (configured for Gmail SMTP)
                 from django.core.mail import EmailMultiAlternatives
                 from django.conf import settings
                 import os
@@ -1083,7 +1057,6 @@ class SendPromotionEmailView(APIView):
                         
                         subject = f'Special Offer: {promotion["code"]} - {promotion["discount_percentage"]}% Off!'
                         
-                        # HTML email template
                         html_message = f'''
                         <!DOCTYPE html>
                         <html>
@@ -1134,7 +1107,6 @@ class SendPromotionEmailView(APIView):
                         </html>
                         '''
                         
-                        # Plain text version for email clients that don't support HTML
                         text_message = f'''
 Hello {first_name},
 
@@ -1158,7 +1130,6 @@ The Film-Hub Team
 To unsubscribe from promotional emails, please visit your profile settings.
                         '''
                         
-                        # Send email using Django's email system (Gmail SMTP)
                         try:
                             msg = EmailMultiAlternatives(
                                 subject=subject,
@@ -1170,7 +1141,6 @@ To unsubscribe from promotional emails, please visit your profile settings.
                             msg.send(fail_silently=False)
                             print(f"✓ Sent email to {user_email} via Gmail SMTP")
                         except Exception as email_error:
-                            # If email fails, log to console
                             print(f"⚠️ Failed to send email to {user_email}: {str(email_error)}")
                             print(f"\n{'='*60}")
                             print(f"PROMOTIONAL EMAIL (Console Fallback)")
@@ -1237,7 +1207,6 @@ class ValidatePromotionView(APIView):
                 columns = [col[0] for col in cursor.description]
                 promotion = dict(zip(columns, row))
                 
-                # Check date validity
                 from datetime import date
                 today = date.today()
                 start_date = promotion['start_date']

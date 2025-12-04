@@ -9,11 +9,9 @@ class HealthCheckView(APIView):
     
     def get(self, request):
         try:
-            # Test database connection
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
             
-            # Count movies in database
             movie_count = Movie.objects.count()
             
             return Response({

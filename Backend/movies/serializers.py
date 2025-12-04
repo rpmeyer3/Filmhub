@@ -43,18 +43,14 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         }
     
     def validate_card_number(self, value):
-        # Remove spaces and dashes
         card_number = re.sub(r'[\s-]', '', value)
         
-        # Check if only digits
         if not card_number.isdigit():
             raise serializers.ValidationError("Card number must contain only digits")
         
-        # Check length 
         if len(card_number) < 13 or len(card_number) > 19:
             raise serializers.ValidationError(f"Card number must be between 13 and 19 digits (got {len(card_number)})")
         
-        # Luhn algorithm
         def luhn_check(card_num):
             digits = [int(d) for d in card_num]
             checksum = 0
@@ -84,7 +80,6 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         if month and year:
             try:
                 exp_date = date(year, month, 1)
-                # Check if card is expired
                 today = date.today()
                 if exp_date.year < today.year or (exp_date.year == today.year and exp_date.month < today.month):
                     raise serializers.ValidationError("Card has expired")
@@ -94,10 +89,8 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         return data
     
     def get_card_brand(self, card_number):
-        # Remove spaces
         card_number = re.sub(r'[\s-]', '', card_number)
         
-        # Card brand patterns
         if card_number.startswith('4'):
             return 'Visa'
         elif card_number.startswith(('51', '52', '53', '54', '55')) or (2221 <= int(card_number[:4]) <= 2720):
@@ -110,25 +103,18 @@ class PaymentCardSerializer(serializers.ModelSerializer):
             return 'Unknown'
     
     def create(self, validated_data):
-        # Extract write-only fields
         cvv = validated_data.pop('cvv')
         expiration_month = validated_data.pop('expiration_month')
         expiration_year = validated_data.pop('expiration_year')
         user_id = validated_data.pop('user_id', None)
         
-        # Get card number and determine brand
         card_number = validated_data.get('card_number')
         brand = self.get_card_brand(card_number)
         
-        # Store last 4 digits
         last_four = card_number[-4:]
         
-        # Create expiration date
         expiration_date = date(expiration_year, expiration_month, 1)
         
-        # Create the card
-        # NOTE: In production, you should encrypt the full card number
-        # For now, we'll store it as-is (not recommended for production)
         card = PaymentCard.objects.create(
             user_id=user_id,
             cardholder_name=validated_data.get('cardholder_name'),
@@ -142,7 +128,6 @@ class PaymentCardSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        # Only show last 4 digits, not full card number
         if 'card_number' in representation:
             representation['card_number'] = f"****{instance.last_four}"
         return representation
