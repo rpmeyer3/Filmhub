@@ -1,11 +1,8 @@
 'use client'
-
 import AdminRoute from '@/components/AdminRoute'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
-
 export default function AdminShowtimesPage() {
   const [showrooms, setShowrooms] = useState([])
   const [loading, setLoading] = useState(true)
@@ -17,13 +14,12 @@ export default function AdminShowtimesPage() {
     seats_per_row: 12,
     capacity: 120
   })
-
   useEffect(() => {
     fetchShowrooms()
   }, [])
 
   useEffect(() => {
-    // Auto-calculate capacity when rows or seats_per_row change
+    //calculate capacity when rows or seats_per_row change
     setFormData(prev => ({
       ...prev,
       capacity: prev.rows * prev.seats_per_row
@@ -43,7 +39,6 @@ export default function AdminShowtimesPage() {
       setLoading(false)
     }
   }
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -51,17 +46,14 @@ export default function AdminShowtimesPage() {
       [name]: name === 'name' ? value : parseInt(value) || 0
     }))
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     try {
       const url = editingShowroom 
         ? `${API_URL}/admin/showrooms/${editingShowroom.id}/`
         : `${API_URL}/admin/showrooms/`
       
       const method = editingShowroom ? 'PUT' : 'POST'
-
       const response = await fetch(url, {
         method,
         headers: {
@@ -69,9 +61,7 @@ export default function AdminShowtimesPage() {
         },
         body: JSON.stringify(formData)
       })
-
       const data = await response.json()
-
       if (data.success) {
         alert(editingShowroom ? 'Showroom updated successfully!' : 'Showroom created successfully!')
         setShowForm(false)
@@ -86,7 +76,6 @@ export default function AdminShowtimesPage() {
       alert('Failed to save showroom')
     }
   }
-
   const handleEdit = (showroom) => {
     setEditingShowroom(showroom)
     setFormData({
@@ -97,9 +86,8 @@ export default function AdminShowtimesPage() {
     })
     setShowForm(true)
   }
-
   const handleDelete = async (showroomId) => {
-    if (!confirm('Are you sure you want to delete this showroom? This will also delete all associated showtimes and bookings.')) {
+    if (!confirm('Are you sure you want to delete this showroom? itll delte all other showtimes and bookings.')) {
       return
     }
 
@@ -130,19 +118,16 @@ export default function AdminShowtimesPage() {
       capacity: 120
     })
   }
-
   const cancelEdit = () => {
     setShowForm(false)
     setEditingShowroom(null)
     resetForm()
   }
-
   const renderSeatLayout = (rows, seatsPerRow) => {
     const maxPreviewRows = 5
     const maxPreviewSeats = 10
     const displayRows = Math.min(rows, maxPreviewRows)
     const displaySeats = Math.min(seatsPerRow, maxPreviewSeats)
-    
     return (
       <div className="bg-gray-50 p-4 rounded-md">
         <div className="text-center mb-2">
@@ -169,7 +154,6 @@ export default function AdminShowtimesPage() {
       </div>
     )
   }
-
   return (
     <AdminRoute>
       <div className="min-h-screen bg-gray-100">
@@ -192,8 +176,6 @@ export default function AdminShowtimesPage() {
               </button>
             </div>
           </div>
-
-          {/* Add/Edit Form */}
           {showForm && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
@@ -292,8 +274,6 @@ export default function AdminShowtimesPage() {
               </form>
             </div>
           )}
-
-          {/* Showrooms List */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">All Showrooms ({showrooms.length})</h2>
             
@@ -316,8 +296,7 @@ export default function AdminShowtimesPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(showroom.id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
+                          className="text-red-600 hover:text-red-800 text-sm">
                           Delete
                         </button>
                       </div>
@@ -337,7 +316,6 @@ export default function AdminShowtimesPage() {
                         <span className="font-medium text-blue-600">{showroom.capacity}</span>
                       </div>
                     </div>
-
                     <div className="mt-3">
                       {renderSeatLayout(showroom.rows, showroom.seats_per_row)}
                     </div>

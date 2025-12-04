@@ -22,12 +22,11 @@ export default function BookingPage() {
   const [loadingMovie, setLoadingMovie] = useState(true);
   const hasLoadedData = useRef(false);
 
-  // Extract IDs from URL on mount and store in state
   useEffect(() => {
     const showtimeParam = searchParams.get("showtimeId");
     const movieParam = searchParams.get("movieId");
 
-    // Only set if we don't already have them and they exist in URL
+   
     if (showtimeParam && movieParam && (!showtimeId || !movieId)) {
       setShowtimeId(showtimeParam);
       setMovieId(movieParam);
@@ -50,7 +49,6 @@ export default function BookingPage() {
 
   const [savedCards, setSavedCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState("");
-  //helper to know if user has any cards
   const hasSavedCards = savedCards.length > 0;
   const [showNewCardForm, setShowNewCardForm] = useState(false);
   const [loadingCards, setLoadingCards] = useState(false);
@@ -62,7 +60,7 @@ export default function BookingPage() {
     cvv: "",
   });
 
-  // Pricing constants (can be adjusted)
+  // pricing constants well will likely change this eventually
   const PRICING = {
     adult: 12.0,
     child: 8.0,
@@ -70,7 +68,6 @@ export default function BookingPage() {
   };
 
   useEffect(() => {
-    // Only fetch once when component mounts
     if (hasLoadedData.current) return;
     if (!showtimeId || !movieId) return;
 
@@ -80,7 +77,6 @@ export default function BookingPage() {
     hasLoadedData.current = true;
   }, [showtimeId, movieId]);
 
-  // Fetch saved cards when user is available
   useEffect(() => {
     if (user) {
       fetchSavedCards();
@@ -113,7 +109,6 @@ export default function BookingPage() {
       );
       const data = await response.json();
 
-      // API returns movie data directly, not wrapped in success field
       if (data && data.id) {
         setMovie(data);
       }
@@ -129,14 +124,12 @@ export default function BookingPage() {
       ...prev,
       [type]: parseInt(value),
     }));
-    // Reset seat selection when ticket count changes
     setSelectedSeats([]);
     setSeatsConfirmed(false);
   };
 
   const handleSeatsSelected = useCallback((seats) => {
     setSelectedSeats(seats);
-    // Reset confirmation when seats change
     setSeatsConfirmed(false);
   }, []);
 
@@ -306,7 +299,7 @@ export default function BookingPage() {
       return;
     }
 
-    // NEW: block purchase if no saved cards
+    //block purchase if no saved cards
     if (!hasSavedCards) {
       alert("You must add a payment method before booking.");
       router.push("/payment");
@@ -315,9 +308,9 @@ export default function BookingPage() {
 
     //check with the boys
 
-    // NEW: ensure a specific card is selected
+    // ensure a specific card is selected
     //if (!selectedCardId) {
-    //  alert("Please select a payment card");
+    //  alert("please select a payment card mofo");
     //  return;
     //}
 
@@ -331,7 +324,7 @@ export default function BookingPage() {
         num_child_tickets: tickets.child,
         num_senior_tickets: tickets.senior,
         total_amount: calculateTotal(),
-        payment_card_id: selectedCardId, // required
+        payment_card_id: selectedCardId, 
       };
 
       const response = await fetch("http://127.0.0.1:8000/api/bookings/", {
@@ -377,7 +370,7 @@ export default function BookingPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
+       
         <Link
           href="/"
           className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6"
@@ -391,7 +384,7 @@ export default function BookingPage() {
               Book Your Tickets
             </h1>
 
-            {/* Movie and Showtime Info */}
+            
             {(loadingShowtime || loadingMovie) && !showtime && !movie ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
@@ -449,7 +442,7 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Payment Method */}
+            
             <div className="border-t pt-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Payment Method
@@ -482,7 +475,7 @@ export default function BookingPage() {
                         <div>
                           <p className="font-medium text-gray-900">{c.brand}</p>
                           <p className="text-sm text-gray-600">
-                            •••• •••• •••• {c.last_four}
+                            ---- ---- ----{c.last_four}
                           </p>
                           <p className="text-xs text-gray-500">
                             Expires:{" "}
@@ -519,10 +512,10 @@ export default function BookingPage() {
               )}
             </div>
 
-            {/* Booking Form */}
+            
             {showtime && movie && (
               <form className="space-y-6">
-                {/* Ticket Selection */}
+              
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
                     Select Tickets
@@ -599,8 +592,6 @@ export default function BookingPage() {
                     </p>
                   )}
                 </div>
-
-                {/* Promo Code */}
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
                     Promo Code
@@ -634,8 +625,6 @@ export default function BookingPage() {
                     </p>
                   )}
                 </div>
-
-                {/* Summary */}
                 <div className="border-t pt-6 bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
                     Booking Summary
@@ -658,8 +647,6 @@ export default function BookingPage() {
                           `Showroom ${showtime?.showroom_id}`}
                       </span>
                     </div>
-
-                    {/* Ticket Breakdown */}
                     {tickets.adult > 0 && (
                       <div className="flex justify-between text-sm">
                         <span>
@@ -721,7 +708,6 @@ export default function BookingPage() {
                   </div>
                 </div>
 
-                {/* Seat Selection - Only show if tickets are selected */}
                 {getTotalTickets() > 0 && !seatsConfirmed && (
                   <div className="mt-8">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -735,7 +721,6 @@ export default function BookingPage() {
                       userId={user?.id}
                     />
 
-                    {/* Confirm Seats Button */}
                     {selectedSeats.length === getTotalTickets() && (
                       <div className="mt-6 flex justify-center">
                         <button
@@ -750,7 +735,6 @@ export default function BookingPage() {
                   </div>
                 )}
 
-                {/* Show selected seats after confirmation */}
                 {seatsConfirmed && (
                   <div className="mt-8 bg-green-50 border-2 border-green-500 rounded-lg p-6">
                     <div className="flex items-center justify-between">
@@ -773,15 +757,13 @@ export default function BookingPage() {
                     </div>
                   </div>
                 )}
-
-                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-6 mt-8">
                   <button
                     type="button"
                     className="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-400 transition-colors"
                     onClick={() => router.push(`/movie/${movie?.id}`)}
                   >
-                    ← Back to Movie
+                    Go Back to Movie
                   </button>
                   {/*
                   // Complete Booking Button
@@ -799,7 +781,7 @@ export default function BookingPage() {
                     }`}
                     onClick={handleCompleteBooking}
                   >
-                    Complete Booking →
+                    Complete Booking 
                   </button>
                 </div>
               </form>

@@ -3,14 +3,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminRoute from '@/components/AdminRoute';
 import Link from 'next/link';
-
 export default function AdminPromotions() {
   const router = useRouter();
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingPromotion, setEditingPromotion] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  
   const [formData, setFormData] = useState({
     code: '',
     discount_percentage: 10,
@@ -18,11 +16,9 @@ export default function AdminPromotions() {
     end_date: '',
     is_active: true
   });
-
   useEffect(() => {
     fetchPromotions();
   }, []);
-
   const fetchPromotions = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/admin/promotions/');
@@ -36,20 +32,16 @@ export default function AdminPromotions() {
       setLoading(false);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (formData.discount_percentage < 0 || formData.discount_percentage > 100) {
       alert('Discount percentage must be between 0 and 100');
       return;
     }
-    
     if (new Date(formData.end_date) < new Date(formData.start_date)) {
       alert('End date must be after start date');
       return;
     }
-
     try {
       const url = editingPromotion
         ? `http://127.0.0.1:8000/api/admin/promotions/${editingPromotion.id}/`
@@ -66,7 +58,6 @@ export default function AdminPromotions() {
       });
 
       const data = await response.json();
-
       if (data.success) {
         alert(data.message);
         fetchPromotions();
@@ -91,7 +82,6 @@ export default function AdminPromotions() {
     });
     setShowForm(true);
   };
-
   const handleSendEmail = async (id) => {
     if (!confirm('Send promotional email to all subscribed users? This action cannot be undone.')) {
       return;
@@ -114,7 +104,6 @@ export default function AdminPromotions() {
       alert('Failed to send promotion emails');
     }
   };
-
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this promotion?')) {
       return;
@@ -153,7 +142,6 @@ export default function AdminPromotions() {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    // Parse the date string directly without timezone conversion
     const [year, month, day] = dateString.split('-');
     return new Date(year, month - 1, day).toLocaleDateString();
   };
@@ -179,7 +167,6 @@ export default function AdminPromotions() {
       </AdminRoute>
     );
   }
-
   return (
     <AdminRoute>
       <div className="min-h-screen bg-gray-900 text-white p-8">

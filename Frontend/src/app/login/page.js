@@ -16,8 +16,6 @@ export default function Login() {
 
   const { signIn, user } = useAuth();
   const router = useRouter();
-
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       router.push("/");
@@ -57,7 +55,7 @@ export default function Login() {
       }
 
       if (data?.user) {
-        // Check if user is admin (you can modify this logic based on your needs)
+        // Check if user is admin 
         const isAdmin =
           data.user.email?.includes("admin") ||
           data.user.user_metadata?.role === "admin";
@@ -84,7 +82,6 @@ export default function Login() {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -119,7 +116,6 @@ export default function Login() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -145,7 +141,6 @@ export default function Login() {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -173,7 +168,6 @@ export default function Login() {
           </div>
 
           <div className="flex items-center justify-between">
-            {/* Remember Me */}
             <div className="flex items-center">
               <input
                 id="rememberMe"
@@ -191,7 +185,6 @@ export default function Login() {
               </label>
             </div>
 
-            {/* Forgot Password Link */}
             <div className="text-sm">
               <Link
                 href="/reset-password"
@@ -216,7 +209,6 @@ export default function Login() {
             </button>
           </div>
 
-          {/* Demo Accounts */}
           <div className="mt-6 p-4 bg-gray-50 rounded-md">
             <h3 className="text-sm font-medium text-gray-700 mb-2"></h3>
             <div className="text-xs text-gray-600 space-y-1"></div>

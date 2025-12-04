@@ -1,12 +1,10 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import Header from '../../../components/Header'
 import ApiService from '../../../services/api'
-
 export default function MovieDetails() {
   const params = useParams()
   const router = useRouter()
@@ -44,7 +42,7 @@ export default function MovieDetails() {
         setShowtimes(data.showtimes)
       }
     } catch (err) {
-      console.error('Error fetching showtimes:', err)
+      console.error('was not able to fetch showtimes! sorray!:', err)
     }
   }
 
@@ -74,34 +72,26 @@ export default function MovieDetails() {
     })
     return grouped
   }
-
   const handleShowtimeClick = (showtime) => {
     router.push(`/booking?movieId=${movieId}&showtimeId=${showtime.id}`)
   }
 
   const getTrailerUrl = () => {
     if (!movie?.title) return null
-    
-    // Use actual trailer URL from database if available
     if (movie.trailer_url) {
       return movie.trailer_url
     }
-    
-    // Fallback to YouTube search
     const searchQuery = `${movie.title} ${movie.year} trailer`
     return `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`
   }
 
   const getEmbedTrailerUrl = () => {
-    // Use actual trailer URL from database if available
     if (movie?.trailer_url && movie.trailer_url.includes('youtube.com/watch')) {
       const videoId = movie.trailer_url.split('v=')[1]?.split('&')[0]
       if (videoId) {
         return `https://www.youtube.com/embed/${videoId}`
       }
     }
-    
-    // Fallback placeholder
     return "https://www.youtube.com/embed/dQw4w9WgXcQ"
   }
 
@@ -138,14 +128,13 @@ export default function MovieDetails() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
-          ← Back to Movies
+          Go Back to Movies!
         </Link>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="md:flex">
-            {/* Movie Poster */}
+            
             <div className="md:w-1/3">
               {movie.poster_url && movie.poster_url !== 'N/A' ? (
                 <Image
@@ -162,7 +151,6 @@ export default function MovieDetails() {
               )}
             </div>
 
-            {/* Movie Details */}
             <div className="md:w-2/3 p-8">
               <h1 className="text-4xl font-bold text-gray-800 mb-4">{movie.title}</h1>
               
@@ -196,14 +184,12 @@ export default function MovieDetails() {
                   <p className="text-gray-600">{movie.genre}</p>
                 </div>
               )}
-
               {movie.director && movie.director !== 'N/A' && (
                 <div className="mb-4">
                   <h3 className="font-semibold text-gray-700 mb-2">Director:</h3>
                   <p className="text-gray-600">{movie.director}</p>
                 </div>
               )}
-
               {movie.actors && movie.actors !== 'N/A' && (
                 <div className="mb-4">
                   <h3 className="font-semibold text-gray-700 mb-2">Cast:</h3>
@@ -218,7 +204,6 @@ export default function MovieDetails() {
                 </div>
               )}
 
-              {/* Showtimes - Only show for currently running movies */}
               {movie.is_running && !movie.is_coming_soon && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-3">Available Showtimes:</h3>
@@ -252,19 +237,16 @@ export default function MovieDetails() {
                 </div>
               )}
 
-              {/* Coming Soon indicator */}
               {movie.is_coming_soon && (
                 <div className="mb-6">
                   <div className="bg-blue-100 text-blue-800 text-lg px-6 py-4 rounded-lg text-center font-semibold">
-                    🎬 Coming Soon
+                    Coming Soon!
                   </div>
                   <p className="text-gray-600 text-center mt-2">
-                    This movie will be available for booking soon!
+                    This movie will be available for booking soon sorry!
                   </p>
                 </div>
               )}
-
-              {/* Trailer Section */}
               {movie.trailer_url && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-3">Trailer:</h3>

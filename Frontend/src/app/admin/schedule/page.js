@@ -1,11 +1,8 @@
 'use client'
-
 import AdminRoute from '@/components/AdminRoute'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
-
 export default function AdminSchedulePage() {
   const [showtimes, setShowtimes] = useState([])
   const [movies, setMovies] = useState([])
@@ -20,11 +17,9 @@ export default function AdminSchedulePage() {
     price: '10.00',
     is_now_showing: true
   })
-
   useEffect(() => {
     fetchData()
   }, [])
-
   const fetchData = async () => {
     try {
       const [showtimesRes, moviesRes, showroomsRes] = await Promise.all([
@@ -32,11 +27,9 @@ export default function AdminSchedulePage() {
         fetch(`${API_URL}/movies/`),
         fetch(`${API_URL}/admin/showrooms/`)
       ])
-
       const showtimesData = await showtimesRes.json()
       const moviesData = await moviesRes.json()
       const showroomsData = await showroomsRes.json()
-
       if (showtimesData.success) setShowtimes(showtimesData.showtimes)
       if (moviesData.success) setMovies(moviesData.movies)
       if (showroomsData.success) setShowrooms(showroomsData.showrooms)
@@ -46,7 +39,6 @@ export default function AdminSchedulePage() {
       setLoading(false)
     }
   }
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -54,10 +46,8 @@ export default function AdminSchedulePage() {
       [name]: type === 'checkbox' ? checked : value
     }))
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     try {
       const url = editingShowtime 
         ? `${API_URL}/admin/showtimes/${editingShowtime.id}/`
@@ -72,7 +62,6 @@ export default function AdminSchedulePage() {
         },
         body: JSON.stringify(formData)
       })
-
       const data = await response.json()
 
       if (data.success) {
@@ -89,10 +78,8 @@ export default function AdminSchedulePage() {
       alert('Failed to save showtime')
     }
   }
-
   const handleEdit = (showtime) => {
     setEditingShowtime(showtime)
-    // Format datetime for input field (YYYY-MM-DDTHH:MM)
     const date = new Date(showtime.showtime)
     const formatted = date.toISOString().slice(0, 16)
     
@@ -110,14 +97,11 @@ export default function AdminSchedulePage() {
     if (!confirm('Are you sure you want to delete this showtime?')) {
       return
     }
-
     try {
       const response = await fetch(`${API_URL}/admin/showtimes/${showtimeId}/`, {
         method: 'DELETE'
       })
-
       const data = await response.json()
-
       if (data.success) {
         alert('Showtime deleted successfully!')
         fetchData()
@@ -129,7 +113,6 @@ export default function AdminSchedulePage() {
       alert('Failed to delete showtime')
     }
   }
-
   const resetForm = () => {
     setFormData({
       movie_id: '',
@@ -139,13 +122,11 @@ export default function AdminSchedulePage() {
       is_now_showing: true
     })
   }
-
   const cancelEdit = () => {
     setShowForm(false)
     setEditingShowtime(null)
     resetForm()
   }
-
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleString('en-US', {
@@ -162,7 +143,6 @@ export default function AdminSchedulePage() {
     <AdminRoute>
       <div className="min-h-screen bg-gray-100">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <div className="flex justify-between items-center">
               <div>
@@ -180,8 +160,6 @@ export default function AdminSchedulePage() {
               </button>
             </div>
           </div>
-
-          {/* Add/Edit Form */}
           {showForm && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
@@ -291,8 +269,6 @@ export default function AdminSchedulePage() {
               </form>
             </div>
           )}
-
-          {/* Showtimes List */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Scheduled Showtimes ({showtimes.length})</h2>
             

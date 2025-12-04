@@ -56,7 +56,6 @@ export default function ChangePassword() {
       setLoading(false)
     }
   }
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">

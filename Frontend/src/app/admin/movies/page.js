@@ -3,9 +3,7 @@
 import AdminRoute from '@/components/AdminRoute'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'
-
 export default function AdminMoviesPage() {
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,11 +24,9 @@ export default function AdminMoviesPage() {
     is_running: false,
     is_coming_soon: false
   })
-
   useEffect(() => {
     fetchMovies()
   }, [])
-
   const fetchMovies = async () => {
     try {
       const response = await fetch(`${API_URL}/movies/`)
@@ -44,7 +40,6 @@ export default function AdminMoviesPage() {
       setLoading(false)
     }
   }
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -52,12 +47,9 @@ export default function AdminMoviesPage() {
       [name]: type === 'checkbox' ? checked : value
     }))
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     try {
-      // Convert comma-separated category string to array
       const categoryArray = formData.category ? formData.category.split(',').map(c => c.trim()) : []
       
       const payload = {
@@ -163,7 +155,6 @@ export default function AdminMoviesPage() {
     setEditingMovie(null)
     resetForm()
   }
-
   return (
     <AdminRoute>
       <div className="min-h-screen bg-gray-100">
@@ -173,7 +164,7 @@ export default function AdminMoviesPage() {
             <div className="flex justify-between items-center">
               <div>
                 <Link href="/admin" className="text-blue-600 hover:text-blue-800 mb-2 inline-block">
-                  ← Back to Admin Dashboard
+                  go Back to Admin Dashboard
                 </Link>
                 <h1 className="text-3xl font-bold text-gray-800">Manage Movies</h1>
               </div>
@@ -185,8 +176,6 @@ export default function AdminMoviesPage() {
               </button>
             </div>
           </div>
-
-          {/* Add/Edit Form */}
           {showForm && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
@@ -397,7 +386,6 @@ export default function AdminMoviesPage() {
             </div>
           )}
 
-          {/* Movies List */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">All Movies ({movies.length})</h2>
             
