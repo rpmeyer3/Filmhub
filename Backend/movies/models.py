@@ -262,7 +262,6 @@ class SeatHold(models.Model):
     seat_id = models.UUIDField()       # references seats.id
     user_id = models.UUIDField()       # Supabase user UUID
     showtime_id = models.UUIDField()   # references showtimes.id (UUID version)
-git push --force
     expires_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 
