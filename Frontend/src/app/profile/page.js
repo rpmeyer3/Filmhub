@@ -24,7 +24,6 @@ export default function Profile() {
   const { user, updateProfile, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Check URL parameter for tab on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
@@ -32,15 +31,11 @@ export default function Profile() {
       setActiveTab("bookings");
     }
   }, []);
-
-  // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [user, authLoading, router]);
-
-  // Fetch payment cards
   useEffect(() => {
     if (user) {
       fetchCards();
@@ -66,8 +61,6 @@ export default function Profile() {
       setLoading(false);
     }
   };
-
-  // Load user data when component mounts
   useEffect(() => {
     if (user) {
       setFormData({
@@ -105,7 +98,6 @@ export default function Profile() {
     }
   };
 
-  // Fetch saved payment cards
   useEffect(() => {
     if (!user?.id) return;
 
@@ -119,7 +111,7 @@ export default function Profile() {
         const data = await response.json();
 
         if (data.success) {
-          setSavedCards(data.cards); // 👈 important
+          setSavedCards(data.cards); // important dooooonnt tocuh!!!
         } else {
           console.error("Failed to fetch cards:", data.error);
         }
@@ -152,7 +144,7 @@ export default function Profile() {
     const showtimeDate = new Date(showtime);
     const now = new Date();
     const minutesUntilShowtime = (showtimeDate - now) / (1000 * 60);
-    return minutesUntilShowtime > 60; // Can cancel if more than 60 minutes before showtime
+    return minutesUntilShowtime > 60; // makes so can cancel if more than 60 minutes before showtime
   };
 
   const handleCancelBooking = async (bookingId, bookingNumber) => {
@@ -183,7 +175,7 @@ export default function Profile() {
             2
           )} has been processed.`
         );
-        fetchBookings(); // Refresh the bookings list
+        fetchBookings();
       } else {
         alert(data.error || "Failed to cancel booking");
       }
@@ -213,8 +205,6 @@ export default function Profile() {
       }
 
       setMessage("Profile updated successfully!");
-
-      // Clear message after 5 seconds
       setTimeout(() => {
         setMessage("");
       }, 5000);
@@ -235,7 +225,6 @@ export default function Profile() {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -254,9 +243,8 @@ export default function Profile() {
       </div>
     );
   }
-
   if (!user) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   return (
@@ -264,7 +252,6 @@ export default function Profile() {
       <Header />
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          {/* Tabs */}
           <div className="mb-6">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
@@ -292,7 +279,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Profile Settings Tab */}
           {activeTab === "profile" && (
             <div className="max-w-md mx-auto">
               <div className="bg-white shadow rounded-lg">
@@ -312,9 +298,8 @@ export default function Profile() {
                       {errors.submit}
                     </div>
                   )}
-
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* First Name */}
+                    
                     <div>
                       <label
                         htmlFor="firstName"
@@ -331,8 +316,6 @@ export default function Profile() {
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
                       />
                     </div>
-
-                    {/* Last Name */}
                     <div>
                       <label
                         htmlFor="lastName"
@@ -350,7 +333,6 @@ export default function Profile() {
                       />
                     </div>
 
-                    {/* Email (read-only) */}
                     <div>
                       <label
                         htmlFor="email"
@@ -370,8 +352,6 @@ export default function Profile() {
                         Email cannot be changed. Contact support if needed.
                       </p>
                     </div>
-
-                    {/* Promotions */}
                     <div className="flex items-center">
                       <input
                         id="receivePromotions"
@@ -389,7 +369,6 @@ export default function Profile() {
                       </label>
                     </div>
 
-                    {/* Account Info */}
                     <div className="pt-4 border-t border-gray-200">
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>
@@ -421,11 +400,10 @@ export default function Profile() {
                             : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         }`}
                       >
-                        {loading ? "Updating..." : "Update Profile"}
+                        {loading ? "Updating gooeeeeee..." : "Update Profile"}
                       </button>
                     </div>
                   </form>
-                  {/* Payment Methods quick status */}
                   <div className="mt-8 pt-6 border-t border-gray-200">
                     <h4 className="text-md font-semibold text-gray-900 mb-3">
                       Payment Methods
@@ -437,7 +415,7 @@ export default function Profile() {
                       </p>
                     ) : Array.isArray(savedCards) && savedCards.length > 0 ? (
                       <>
-                        {/* Summary */}
+                        
                         <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
                           <div>
                             <p className="text-green-800 font-medium">
@@ -458,7 +436,7 @@ export default function Profile() {
                           </div>
                         </div>
 
-                        {/* List of all cards */}
+                        
                         <div className="mt-4 space-y-4">
                           {savedCards.map((card) => (
                             <div
@@ -508,7 +486,7 @@ export default function Profile() {
                         </div>
                       </>
                     ) : (
-                      // Empty state
+                      
                       <div className="bg-white shadow rounded-lg p-6">
                         <h2 className="text-xl font-semibold text-gray-900 mb-4">
                           Saved Cards
@@ -551,7 +529,7 @@ export default function Profile() {
             </div>
           )}
 
-          {/* My Bookings Tab */}
+          
           {activeTab === "bookings" && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -583,7 +561,7 @@ export default function Profile() {
                       className="bg-white rounded-lg shadow overflow-hidden"
                     >
                       <div className="md:flex">
-                        {/* Movie Poster */}
+                        
                         <div className="md:shrink-0">
                           <img
                             className="h-48 w-full object-cover md:w-48"
@@ -592,7 +570,7 @@ export default function Profile() {
                           />
                         </div>
 
-                        {/* Booking Details */}
+                        
                         <div className="p-6 flex-1">
                           <div className="flex justify-between items-start">
                             <div>
@@ -661,7 +639,7 @@ export default function Profile() {
                             </div>
                           </div>
 
-                          {/* Cancel Button */}
+                          
                           {booking.status === "confirmed" &&
                             canCancelBooking(booking.showtime) && (
                               <div className="mt-4 pt-4 border-t border-gray-200">
@@ -686,15 +664,15 @@ export default function Profile() {
                             !canCancelBooking(booking.showtime) && (
                               <div className="mt-4 pt-4 border-t border-gray-200">
                                 <p className="text-sm text-gray-500 text-center">
-                                  ⚠️ Cancellation unavailable (less than 60
-                                  minutes until showtime)
+                                  Cancellation unavailable with less than 60
+                                  minutes until showtime sorray!
                                 </p>
                               </div>
                             )}
                           {booking.status === "cancelled" && (
                             <div className="mt-4 pt-4 border-t border-gray-200">
                               <p className="text-sm text-red-600 text-center font-medium">
-                                ✓ This booking has been cancelled
+                                The booking has been cancelled
                               </p>
                             </div>
                           )}

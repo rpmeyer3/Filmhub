@@ -1,10 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../contexts/AuthContext";
-
 export default function Register() {
   const [formData, setFormData] = useState({
     email: "",
@@ -30,28 +28,22 @@ export default function Register() {
   const validateForm = () => {
     const newErrors = {};
 
-    // Email validation
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
-
-    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    // Name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
     }
@@ -121,7 +113,7 @@ export default function Register() {
         setMessage(
           "Registration successful! Please check your email to confirm your account."
         );
-        // Optionally redirect after a delay
+        
         setTimeout(() => {
           router.push("/login");
         }, 3000);
@@ -211,7 +203,6 @@ export default function Register() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* First Name */}
             <div>
               <label
                 htmlFor="firstName"
@@ -236,7 +227,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* Last Name */}
             <div>
               <label
                 htmlFor="lastName"
@@ -261,7 +251,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -287,7 +276,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -313,7 +301,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -341,7 +328,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* Promotions Checkbox */}
             <div className="flex items-center">
               <input
                 id="receivePromotions"
@@ -358,8 +344,6 @@ export default function Register() {
                 I would like to receive promotional emails and special offers
               </label>
             </div>
-
-            {/* Add Payment Card Section */}
             <div className="border-t border-gray-200 pt-4">
               <div className="flex items-center mb-4">
                 <input
@@ -489,7 +473,7 @@ export default function Register() {
                   </div>
 
                   <p className="text-xs text-gray-500">
-                    🔒 Your payment information is encrypted and secure
+                    Your payment information is encrypted and secure
                   </p>
                 </div>
               )}
