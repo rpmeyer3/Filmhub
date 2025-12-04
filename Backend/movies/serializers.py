@@ -118,7 +118,7 @@ class PaymentCardSerializer(serializers.ModelSerializer):
         card = PaymentCard.objects.create(
             user_id=user_id,
             cardholder_name=validated_data.get('cardholder_name'),
-            card_number=card_number,  # In production: encrypt this!
+            card_number=card_number,  # in production: encrypt this!
             expiration_date=expiration_date,
             last_four=last_four,
             brand=brand

@@ -19,7 +19,7 @@ def supabase_webhook(request):
         user_record = data.get('record')
 
         if event == 'INSERT' and user_record:
-            user_type_name = 'customer'  # change logic if needed
+            user_type_name = 'customer' 
             user_type_obj, created = UserType.objects.get_or_create(user_type=user_type_name)
 
             User.objects.create(
