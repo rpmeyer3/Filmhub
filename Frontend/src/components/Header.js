@@ -1,51 +1,31 @@
 'use client'
-
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
-
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  
   const { user, isAdmin, signOut, loading } = useAuth()
   const router = useRouter()
-
   const handleSignOut = async () => {
     await signOut()
     setIsUserMenuOpen(false)
     router.push('/')
   }
-
   return (
     <header className="sticky top-0 z-50 bg-black text-white shadow-lg">
       <div className="container mx-auto px-4">
-        {/* Main navigation */}
         <nav className="flex items-center justify-between py-4">
-          {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-red-500 hover:text-red-400 transition-colors">
               Film-Hub
             </Link>
           </div>
 
-          {/* Desktop Navigation
-          <div className="hidden lg:flex items-center space-x-8">
-            <Link href="/" className="hover:text-red-400 transition-colors font-medium">
-              Home
-            </Link>
-            <a href="#movies" className="hover:text-red-400 transition-colors font-medium">
-              Movies
-            </a>
-          </div>
-            */
-          }
-
-          {/* Search and User Actions */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
+            {}
             <div className="relative">
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -66,7 +46,6 @@ export default function Header() {
               )}
             </div>
 
-            {/* Location */}
             <button className="hidden md:flex items-center space-x-1 hover:text-red-400 transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -75,7 +54,7 @@ export default function Header() {
               <span className="text-sm">Athens, GA</span>
             </button>
 
-            {/* User Authentication */}
+            {}
             {!loading && (
               <div className="hidden md:flex items-center">
                 {user ? (
@@ -168,7 +147,7 @@ export default function Header() {
               </div>
             )}
 
-            {/* Mobile menu button */}
+            {}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="lg:hidden p-2 hover:bg-gray-800 rounded-md transition-colors"
@@ -180,7 +159,7 @@ export default function Header() {
           </div>
         </nav>
 
-        {/* Mobile Navigation Menu */}
+        {}
         {isMenuOpen && (
           <div className="lg:hidden bg-gray-900 rounded-lg mb-4 overflow-hidden">
             <div className="py-2">

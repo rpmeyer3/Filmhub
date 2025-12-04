@@ -6,8 +6,6 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('')
   const [genres, setGenres] = useState([])
-
-  // Extract unique genres from movies
   useEffect(() => {
     if (movies.length > 0) {
       const uniqueGenres = [...new Set(
@@ -37,11 +35,10 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
     onSearch('');
     onFilter('');
   };
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        {/* Search */}
+        {}
         <form onSubmit={handleSearchSubmit} className="flex-1 w-full md:w-auto">
           <div className="relative">
             <input
@@ -61,8 +58,6 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
             </button>
           </div>
         </form>
-
-        {/* Genre Filter */}
         <div className="w-full md:w-auto min-w-48">
           <select
             value={selectedGenre}
@@ -78,7 +73,7 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
           </select>
         </div>
 
-        {/* Clear Filters */}
+        {}
         {(searchTerm || selectedGenre) && (
           <button
             onClick={clearFilters}
@@ -89,7 +84,7 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
         )}
       </div>
 
-      {/* Active filters display */}
+      {}
       {(searchTerm || selectedGenre) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {searchTerm && (

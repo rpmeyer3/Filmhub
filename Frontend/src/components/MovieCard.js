@@ -7,7 +7,7 @@ export default function MovieCard({ movie }) {
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      {/* Movie Poster */}
+      {}
       <div className="relative aspect-[2/3] bg-gray-100">
         <Link href={`/movie/${movie.id}`}>
           {movie.poster_url && movie.poster_url !== 'N/A' ? (
@@ -26,7 +26,7 @@ export default function MovieCard({ movie }) {
         </Link>
       </div>
 
-      {/* Movie Info */}
+      {}
       <div className="p-4">
         <Link href={`/movie/${movie.id}`}>
           <h3 className="font-bold text-lg mb-2 hover:text-red-600 cursor-pointer line-clamp-2">
@@ -54,7 +54,7 @@ export default function MovieCard({ movie }) {
           </p>
         )}
 
-        {/* Now Playing Badge */}
+        {}
         {movie.is_running && !movie.is_coming_soon && (
           <div className="border-t pt-3">
             <Link 
@@ -65,8 +65,7 @@ export default function MovieCard({ movie }) {
             </Link>
           </div>
         )}
-
-        {/* Coming Soon Badge */}
+        {}
         {movie.is_coming_soon && (
           <div className="border-t pt-3">
             <div className="bg-blue-100 text-blue-800 text-sm px-3 py-2 rounded text-center font-semibold">

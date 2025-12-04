@@ -21,7 +21,6 @@ export async function checkIsAdmin(userId) {
     return false
   }
 }
-
 export async function requireAdmin(userId) {
   const isAdmin = await checkIsAdmin(userId)
   if (!isAdmin) {

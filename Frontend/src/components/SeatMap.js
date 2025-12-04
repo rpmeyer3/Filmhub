@@ -1,7 +1,5 @@
 "use client";
-
 import { useState, useEffect } from "react";
-
 export default function SeatMap({
   showtimeId,
   maxSeats,
@@ -19,21 +17,18 @@ export default function SeatMap({
       fetchSeats();
     }
   }, [showtimeId, userId]);
-
-  // Reset selected seats when maxSeats changes
   useEffect(() => {
     setSelectedSeats([]);
   }, [maxSeats]);
 
   useEffect(() => {
-    // need a logged-in user and a showtime to hold seats
+    // need a logged in user and a showtime to hold seats
     if (!userId || !showtimeId) return;
 
     const seatIds = selectedSeats.map((s) => s.id);
     if (seatIds.length === 0) return;
 
     const controller = new AbortController();
-
     const holdSeats = async () => {
       try {
         await fetch("http://127.0.0.1:8000/api/seats/hold/", {
@@ -57,11 +52,8 @@ export default function SeatMap({
     };
 
     holdSeats();
-
-    // cleanup if component unmounts
     return () => controller.abort();
   }, [selectedSeats, userId, showtimeId]);
-
   const fetchSeats = async () => {
     try {
       setLoading(true);
@@ -85,19 +77,14 @@ export default function SeatMap({
       setLoading(false);
     }
   };
-
   const handleSeatClick = (seat) => {
     if (!seat.is_available) return;
-
     const isSelected = selectedSeats.find((s) => s.id === seat.id);
-
     if (isSelected) {
-      // Deselect seat
       const newSelection = selectedSeats.filter((s) => s.id !== seat.id);
       setSelectedSeats(newSelection);
       onSeatsSelected(newSelection);
     } else {
-      // Select seat (if under max limit)
       if (selectedSeats.length < maxSeats) {
         const newSelection = [...selectedSeats, seat];
         setSelectedSeats(newSelection);
@@ -128,7 +115,6 @@ export default function SeatMap({
     });
     return grouped;
   };
-
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -137,7 +123,6 @@ export default function SeatMap({
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
@@ -152,7 +137,7 @@ export default function SeatMap({
 
   return (
     <div className="space-y-6">
-      {/* Screen indicator */}
+      {}
       <div className="text-center">
         <div className="inline-block bg-gray-800 text-white px-8 py-2 rounded-t-lg text-sm">
           SCREEN
@@ -160,7 +145,7 @@ export default function SeatMap({
         <div className="h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
       </div>
 
-      {/* Seat map */}
+      {}
       <div className="bg-gray-50 rounded-lg p-6 overflow-x-auto">
         <div className="inline-block min-w-full">
           {Object.keys(seatsByRow)
@@ -174,12 +159,12 @@ export default function SeatMap({
                   key={rowNum}
                   className="flex items-center justify-center mb-3"
                 >
-                  {/* Row label */}
+                  {}
                   <div className="w-8 text-center font-semibold text-gray-700 mr-2">
                     {rowLetter}
                   </div>
 
-                  {/* Seats */}
+                  {}
                   <div className="flex gap-2">
                     {rowSeats
                       .sort((a, b) => a.seat_number - b.seat_number)
@@ -203,7 +188,7 @@ export default function SeatMap({
                       ))}
                   </div>
 
-                  {/* Row label on right */}
+                  {}
                   <div className="w-8 text-center font-semibold text-gray-700 ml-2">
                     {rowLetter}
                   </div>
@@ -212,8 +197,7 @@ export default function SeatMap({
             })}
         </div>
       </div>
-
-      {/* Legend */}
+      {}
       <div className="flex justify-center items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-green-500 rounded-t-lg"></div>
@@ -228,8 +212,7 @@ export default function SeatMap({
           <span>Booked</span>
         </div>
       </div>
-
-      {/* Selection summary */}
+      {}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex justify-between items-center">
           <div>

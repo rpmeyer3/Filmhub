@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import MovieCard from "../components/MovieCard";
@@ -12,8 +11,6 @@ export default function Home() {
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Fetch movies on component mount
   useEffect(() => {
     fetchMovies();
   }, []);
@@ -23,12 +20,12 @@ export default function Home() {
       setLoading(true);
       const response = await ApiService.getMovies();
 
-      // Handle the Supabase Movies table data - using only database IDs
+      // Handle the Supabase Movies table data uses only database IDs do not fucking tocuh!!!
       const movieData = response.movies
         ? response.movies.map((movie) => ({
             id: movie.id,
             title: movie.title,
-            year: movie.year || "2024", // Use actual year from database, fallback to 2024
+            year: movie.year || "2024", // Use actual year from database, falls back to 2024
             plot: movie.synopsis,
             poster_url: movie.poster_url,
             genre: movie.category
@@ -96,7 +93,6 @@ export default function Home() {
     setFilteredMovies(filtered);
   };
 
-  // Separate movies into Currently Running and Coming Soon using database flags
   const currentlyRunning = filteredMovies.filter(
     (movie) => movie.is_running === true
   );
@@ -132,7 +128,6 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
             Welcome to Film-Hub!
@@ -148,14 +143,11 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Search and Filter */}
         <SearchFilter
           onSearch={handleSearch}
           onFilter={handleFilter}
           movies={movies}
         />
-
-        {/* Currently Running Movies */}
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
             Currently Running
@@ -176,8 +168,6 @@ export default function Home() {
             </div>
           )}
         </section>
-
-        {/* Coming Soon Movies */}
         {comingSoon.length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">

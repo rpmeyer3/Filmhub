@@ -2,9 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-
 const AuthContext = createContext({})
-
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
@@ -12,13 +10,11 @@ export const useAuth = () => {
   }
   return context
 }
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
-
-  // Helper to check admin status
+  // Helps to check admin status please do not touch!!
   const checkAdminStatus = async (userId) => {
     if (!userId) {
       setIsAdmin(false)
@@ -46,7 +42,6 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    // Get initial session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       const currentUser = session?.user ?? null
@@ -60,8 +55,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     getSession()
-
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null
@@ -79,21 +72,16 @@ export const AuthProvider = ({ children }) => {
 
     return () => subscription.unsubscribe()
   }, [])
-
-  // Sign up function
   const signUp = async (email, password, userData = {}) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userData // Additional user metadata
+          data: userData 
         }
       })
-      
       if (error) throw error
-      
-      // Create profile record if user was created
       if (data?.user) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -108,7 +96,6 @@ export const AuthProvider = ({ children }) => {
         
         if (profileError) {
           console.error('Error creating profile:', profileError)
-          // Don't fail signup if profile creation fails - it might already exist from trigger
         }
       }
       
@@ -117,8 +104,6 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
-
-  // Sign in function
   const signIn = async (email, password) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -132,8 +117,6 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
-
-  // Sign out function
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
@@ -143,8 +126,6 @@ export const AuthProvider = ({ children }) => {
       return { error }
     }
   }
-
-  // Reset password function
   const resetPassword = async (email) => {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -157,8 +138,6 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
-
-  // Update password function
   const updatePassword = async (newPassword) => {
     try {
       const { data, error } = await supabase.auth.updateUser({
@@ -171,11 +150,8 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
-
-  // Update user profile
   const updateProfile = async (updates) => {
     try {
-      // Update auth metadata
       const { data: authData, error: authError } = await supabase.auth.updateUser({
         data: updates
       })
@@ -183,7 +159,6 @@ export const AuthProvider = ({ children }) => {
       if (authError) throw authError
       
       // Try to update the profiles table, but don't fail if it doesn't work
-      // (it might be handled by a database trigger)
       try {
         await supabase
           .from('profiles')

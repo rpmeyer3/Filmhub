@@ -1,13 +1,10 @@
 'use client'
-
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-
 export default function AdminRoute({ children }) {
   const { user, isAdmin, loading } = useAuth()
   const router = useRouter()
-
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -17,7 +14,6 @@ export default function AdminRoute({ children }) {
       }
     }
   }, [user, isAdmin, loading, router])
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -28,7 +24,6 @@ export default function AdminRoute({ children }) {
       </div>
     )
   }
-
   if (!user || !isAdmin) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -39,6 +34,5 @@ export default function AdminRoute({ children }) {
       </div>
     )
   }
-
   return <>{children}</>
 }

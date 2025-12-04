@@ -24,8 +24,6 @@ class ApiService {
       throw error;
     }
   }
-
-  // Movie endpoints
   async getMovies() {
     return this.request('/movies/');
   }
@@ -37,8 +35,6 @@ class ApiService {
   async searchMovies(query) {
     return this.request(`/movies/search/${encodeURIComponent(query)}/`);
   }
-
-  // User favorites (for future use)
   async getFavorites() {
     return this.request('/favorites/');
   }
@@ -48,8 +44,6 @@ class ApiService {
       method: 'POST',
     });
   }
-
-  // Reviews (for future use)
   async getMovieReviews(movieId) {
     return this.request(`/reviews/${movieId}/`);
   }
