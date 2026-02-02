@@ -20,7 +20,7 @@ export default function Home() {
       setLoading(true);
       const response = await ApiService.getMovies();
 
-      // Handle the Supabase Movies table data uses only database IDs do not fucking tocuh!!!
+      // Map movie data from database
       const movieData = response.movies
         ? response.movies.map((movie) => ({
             id: movie.id,
@@ -130,11 +130,8 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-            Welcome to Film-Hub!
+            Welcome to Film-Hub
           </h1>
-          <h2 className="text-2xl md:text-6xl text-gray-800 mb-4">
-            We are excited to present our final project!
-          </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Your premier destination for movie tickets and entertainment.
           </p>

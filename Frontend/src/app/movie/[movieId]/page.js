@@ -5,6 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Header from '../../../components/Header'
 import ApiService from '../../../services/api'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 export default function MovieDetails() {
   const params = useParams()
   const router = useRouter()
@@ -36,13 +39,13 @@ export default function MovieDetails() {
 
   const fetchShowtimes = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/movies/${movieId}/showtimes/`)
+      const response = await fetch(`${API_BASE_URL}/movies/${movieId}/showtimes/`)
       const data = await response.json()
       if (data.success) {
         setShowtimes(data.showtimes)
       }
     } catch (err) {
-      console.error('was not able to fetch showtimes! sorray!:', err)
+      console.error('Failed to fetch showtimes:', err)
     }
   }
 

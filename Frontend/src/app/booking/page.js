@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
 import SeatMap from "../../components/SeatMap";
 import { useAuth } from "../../contexts/AuthContext";
 
-export default function BookingPage() {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+function BookingPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -87,7 +89,7 @@ export default function BookingPage() {
     try {
       setLoadingShowtime(true);
       const response = await fetch(
-        `http://127.0.0.1:8000/api/admin/showtimes/${showtimeId}/`
+        `${API_BASE_URL}/admin/showtimes/${showtimeId}/`
       );
       const data = await response.json();
 
@@ -105,7 +107,7 @@ export default function BookingPage() {
     try {
       setLoadingMovie(true);
       const response = await fetch(
-        `http://127.0.0.1:8000/api/movies/${movieId}/`
+        `${API_BASE_URL}/movies/${movieId}/`
       );
       const data = await response.json();
 
@@ -147,7 +149,7 @@ export default function BookingPage() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/promotions/validate/",
+        `${API_BASE_URL}/promotions/validate/`,
         {
           method: "POST",
           headers: {
@@ -215,7 +217,7 @@ export default function BookingPage() {
     try {
       setLoadingCards(true);
       const response = await fetch(
-        `http://localhost:8000/api/payment-cards/?supabase_id=${user.id}`
+        `${API_BASE_URL}/payment-cards/?supabase_id=${user.id}`
       );
       const data = await response.json();
 
@@ -251,7 +253,7 @@ export default function BookingPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/payment-cards/", {
+      const response = await fetch(`${API_BASE_URL}/payment-cards/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -306,14 +308,6 @@ export default function BookingPage() {
       return;
     }
 
-    //check with the boys
-
-    // ensure a specific card is selected
-    //if (!selectedCardId) {
-    //  alert("please select a payment card mofo");
-    //  return;
-    //}
-
     try {
       const bookingData = {
         user_id: user.id,
@@ -327,7 +321,7 @@ export default function BookingPage() {
         payment_card_id: selectedCardId, 
       };
 
-      const response = await fetch("http://127.0.0.1:8000/api/bookings/", {
+      const response = await fetch(`${API_BASE_URL}/bookings/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
@@ -790,5 +784,19 @@ export default function BookingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+// Wrap with Suspense for useSearchParams (required in Next.js 15)
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading booking...</p>
+      </div>
+    }>
+      <BookingPageContent />
+    </Suspense>
   );
 }

@@ -7,7 +7,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Creates the Supabase client do not fucking touch this please
+// Create the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,

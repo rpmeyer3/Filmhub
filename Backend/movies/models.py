@@ -114,12 +114,24 @@ class User(AbstractUser):
 
 
 class PaymentCard(models.Model):
+    """Payment card model - stores only safe, non-sensitive data for PCI compliance.
+    
+    SECURITY NOTE: We intentionally do NOT store:
+    - Full card numbers (only last 4 digits)
+    - CVV/CVC codes
+    - Full expiration dates are stored only for validation
+    
+    For actual payment processing, use a PCI-compliant payment processor
+    like Stripe, which handles sensitive card data securely.
+    """
     user_id = models.UUIDField(null=True, blank=True)  # Links to Supabase auth.users id / profiles table
     cardholder_name = models.CharField(max_length=100)
-    card_number = models.CharField(max_length=16)
+    # REMOVED: card_number field - never store full card numbers!
     expiration_date = models.DateField()
-    last_four = models.CharField(max_length=4)
+    last_four = models.CharField(max_length=4)  # Only store last 4 digits
     brand = models.CharField(max_length=20)  # e.g., 'Visa', 'MasterCard'
+    # For real payments, store a token from your payment processor (e.g., Stripe token)
+    payment_token = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = 'payment_cards'

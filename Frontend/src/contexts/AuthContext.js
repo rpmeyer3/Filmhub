@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
-  // Helps to check admin status please do not touch!!
+  // Check admin status from profile metadata
   const checkAdminStatus = async (userId) => {
     if (!userId) {
       setIsAdmin(false)

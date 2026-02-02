@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import Header from "../../components/Header";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 export default function Profile() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -46,7 +48,7 @@ export default function Profile() {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:8000/api/payment-cards/?supabase_id=${user.id}`
+        `${API_BASE_URL}/payment-cards/?supabase_id=${user.id}`
       );
       const data = await response.json();
 
@@ -81,7 +83,7 @@ export default function Profile() {
       setLoadingBookings(true);
       console.log("Fetching bookings for user:", user.id);
       const response = await fetch(
-        `http://127.0.0.1:8000/api/bookings/user/?user_id=${user.id}`
+        `${API_BASE_URL}/bookings/user/?user_id=${user.id}`
       );
       const data = await response.json();
       console.log("Bookings response:", data);
@@ -106,12 +108,12 @@ export default function Profile() {
         setLoadingCards(true);
 
         const response = await fetch(
-          `http://localhost:8000/api/payment-cards/?supabase_id=${user.id}`
+          `${API_BASE_URL}/payment-cards/?supabase_id=${user.id}`
         );
         const data = await response.json();
 
         if (data.success) {
-          setSavedCards(data.cards); // important dooooonnt tocuh!!!
+          setSavedCards(data.cards);
         } else {
           console.error("Failed to fetch cards:", data.error);
         }
@@ -158,7 +160,7 @@ export default function Profile() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/bookings/${bookingId}/cancel/`,
+        `${API_BASE_URL}/bookings/${bookingId}/cancel/`,
         {
           method: "POST",
           headers: {
@@ -665,7 +667,7 @@ export default function Profile() {
                               <div className="mt-4 pt-4 border-t border-gray-200">
                                 <p className="text-sm text-gray-500 text-center">
                                   Cancellation unavailable with less than 60
-                                  minutes until showtime sorray!
+                                  minutes until showtime.
                                 </p>
                               </div>
                             )}

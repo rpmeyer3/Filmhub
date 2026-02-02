@@ -3,6 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../contexts/AuthContext";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 export default function Register() {
   const [formData, setFormData] = useState({
     email: "",
@@ -79,11 +82,8 @@ export default function Register() {
         // If user wants to add payment card, save it
         if (formData.addPaymentCard && formData.cardNumber) {
           try {
-            {
-              /*changed here*/
-            }
             const cardResponse = await fetch(
-              "http://localhost:8000/api/payment-cards/",
+              `${API_BASE_URL}/payment-cards/`,
               {
                 method: "POST",
                 headers: {

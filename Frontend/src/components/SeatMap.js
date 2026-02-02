@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 export default function SeatMap({
   showtimeId,
   maxSeats,
@@ -31,7 +34,7 @@ export default function SeatMap({
     const controller = new AbortController();
     const holdSeats = async () => {
       try {
-        await fetch("http://127.0.0.1:8000/api/seats/hold/", {
+        await fetch(`${API_BASE_URL}/seats/hold/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -58,8 +61,8 @@ export default function SeatMap({
     try {
       setLoading(true);
       const url = userId
-        ? `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/?user_id=${userId}`
-        : `http://127.0.0.1:8000/api/showtimes/${showtimeId}/seats/`;
+        ? `${API_BASE_URL}/showtimes/${showtimeId}/seats/?user_id=${userId}`
+        : `${API_BASE_URL}/showtimes/${showtimeId}/seats/`;
 
       const response = await fetch(url);
       const data = await response.json();

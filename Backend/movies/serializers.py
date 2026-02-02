@@ -33,14 +33,14 @@ class PaymentCardSerializer(serializers.ModelSerializer):
     expiration_year = serializers.IntegerField(write_only=True, required=True)
     user_id = serializers.UUIDField(write_only=True, required=False)
     
+    # card_number is write-only input field (not a model field anymore)
+    card_number = serializers.CharField(write_only=True, required=True, min_length=13, max_length=19)
+    
     class Meta:
         model = PaymentCard
         fields = ['id', 'cardholder_name', 'card_number', 'expiration_date', 
                   'last_four', 'brand', 'cvv', 'expiration_month', 'expiration_year', 'user_id']
         read_only_fields = ['id', 'last_four', 'brand', 'expiration_date']
-        extra_kwargs = {
-            'card_number': {'write_only': True}
-        }
     
     def validate_card_number(self, value):
         card_number = re.sub(r'[\s-]', '', value)
@@ -103,22 +103,27 @@ class PaymentCardSerializer(serializers.ModelSerializer):
             return 'Unknown'
     
     def create(self, validated_data):
-        cvv = validated_data.pop('cvv')
+        # Pop sensitive data that should NOT be stored
+        cvv = validated_data.pop('cvv')  # Never stored - used only for validation
         expiration_month = validated_data.pop('expiration_month')
         expiration_year = validated_data.pop('expiration_year')
         user_id = validated_data.pop('user_id', None)
         
-        card_number = validated_data.get('card_number')
+        card_number = validated_data.pop('card_number')  # Pop it - don't store full number!
         brand = self.get_card_brand(card_number)
         
+        # Only store the last 4 digits - PCI compliance
         last_four = card_number[-4:]
         
         expiration_date = date(expiration_year, expiration_month, 1)
         
+        # SECURITY: We only store non-sensitive card info
+        # For real payment processing, integrate with Stripe/PayPal
+        # and store only their payment token
         card = PaymentCard.objects.create(
             user_id=user_id,
             cardholder_name=validated_data.get('cardholder_name'),
-            card_number=card_number,  # in production: encrypt this!
+            # card_number is NOT stored - only last_four
             expiration_date=expiration_date,
             last_four=last_four,
             brand=brand

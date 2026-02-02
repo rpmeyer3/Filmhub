@@ -87,7 +87,7 @@ export default function AdminShowtimesPage() {
     setShowForm(true)
   }
   const handleDelete = async (showroomId) => {
-    if (!confirm('Are you sure you want to delete this showroom? itll delte all other showtimes and bookings.')) {
+    if (!confirm('Are you sure you want to delete this showroom? This will delete all associated showtimes and bookings.')) {
       return
     }
 

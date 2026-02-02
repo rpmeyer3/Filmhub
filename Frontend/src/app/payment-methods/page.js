@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import Header from "../../components/Header";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 export default function PaymentMethods() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ export default function PaymentMethods() {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:8000/api/payment-cards/?supabase_id=${user.id}`
+        `${API_BASE_URL}/payment-cards/?supabase_id=${user.id}`
       );
       const data = await response.json();
 
@@ -116,7 +118,7 @@ export default function PaymentMethods() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:8000/api/payment-cards/", {
+      const response = await fetch(`${API_BASE_URL}/payment-cards/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +161,7 @@ export default function PaymentMethods() {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/api/payment-cards/${cardId}/?supabase_id=${user.id}`,
+        `${API_BASE_URL}/payment-cards/${cardId}/?supabase_id=${user.id}`,
         { method: "DELETE" }
       );
 
