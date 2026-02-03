@@ -2,7 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+
 const AuthContext = createContext({})
+
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
@@ -10,13 +12,15 @@ export const useAuth = () => {
   }
   return context
 }
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
+
   // Check admin status from profile metadata
   const checkAdminStatus = async (userId) => {
-    if (!userId) {
+    if (!userId || !supabase) {
       setIsAdmin(false)
       return
     }
@@ -42,19 +46,31 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-      
-      if (currentUser) {
-        await checkAdminStatus(currentUser.id)
-      }
-      
+    // If Supabase is not configured, just set loading to false
+    if (!supabase) {
+      console.warn('Supabase is not configured. Auth features will be disabled.')
       setLoading(false)
+      return
+    }
+
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
+        
+        if (currentUser) {
+          await checkAdminStatus(currentUser.id)
+        }
+      } catch (error) {
+        console.error('Error getting session:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getSession()
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null
@@ -73,6 +89,9 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
   const signUp = async (email, password, userData = {}) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase is not configured' } }
+    }
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -104,7 +123,11 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
+
   const signIn = async (email, password) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase is not configured' } }
+    }
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -117,7 +140,11 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
+
   const signOut = async () => {
+    if (!supabase) {
+      return { error: { message: 'Supabase is not configured' } }
+    }
     try {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
@@ -126,7 +153,11 @@ export const AuthProvider = ({ children }) => {
       return { error }
     }
   }
+
   const resetPassword = async (email) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase is not configured' } }
+    }
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
@@ -138,7 +169,11 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
+
   const updatePassword = async (newPassword) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase is not configured' } }
+    }
     try {
       const { data, error } = await supabase.auth.updateUser({
         password: newPassword
@@ -150,7 +185,11 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error }
     }
   }
+
   const updateProfile = async (updates) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase is not configured' } }
+    }
     try {
       const { data: authData, error: authError } = await supabase.auth.updateUser({
         data: updates

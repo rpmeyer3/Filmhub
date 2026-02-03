@@ -6,6 +6,8 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('')
   const [genres, setGenres] = useState([])
+  const [isFocused, setIsFocused] = useState(false)
+
   useEffect(() => {
     if (movies.length > 0) {
       const uniqueGenres = [...new Set(
@@ -35,66 +37,90 @@ export default function SearchFilter({ onSearch, onFilter, movies = [] }) {
     onSearch('');
     onFilter('');
   };
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="rounded-2xl">
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        {}
+        {/* Search Input */}
         <form onSubmit={handleSearchSubmit} className="flex-1 w-full md:w-auto">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search movies by title..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-            <button
-              type="submit"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-600"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+          <div className={`relative transition-all duration-300 ${isFocused ? 'scale-[1.02]' : ''}`}>
+            <div className={`absolute -inset-0.5 bg-gradient-to-r from-red-600 to-purple-600 rounded-xl blur opacity-0 transition-opacity duration-300 ${isFocused ? 'opacity-50' : ''}`}></div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search movies by title..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className="w-full px-5 py-3.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </form>
-        <div className="w-full md:w-auto min-w-48">
-          <select
-            value={selectedGenre}
-            onChange={handleGenreChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-          >
-            <option value="">All Genres</option>
-            {genres.map((genre) => (
-              <option key={genre} value={genre}>
-                {genre}
-              </option>
-            ))}
-          </select>
+
+        {/* Genre Filter */}
+        <div className="w-full md:w-auto min-w-52">
+          <div className="relative">
+            <select
+              value={selectedGenre}
+              onChange={handleGenreChange}
+              className="w-full px-5 py-3.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all"
+            >
+              <option value="" className="bg-gray-900">All Genres</option>
+              {genres.map((genre) => (
+                <option key={genre} value={genre} className="bg-gray-900">
+                  {genre}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
 
-        {}
+        {/* Clear Button */}
         {(searchTerm || selectedGenre) && (
           <button
             onClick={clearFilters}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors whitespace-nowrap"
+            className="px-5 py-3.5 bg-gray-700/50 hover:bg-gray-600 text-gray-300 hover:text-white rounded-xl transition-all duration-300 whitespace-nowrap flex items-center gap-2"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
             Clear Filters
           </button>
         )}
       </div>
 
-      {}
+      {/* Active Filters */}
       {(searchTerm || selectedGenre) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {searchTerm && (
-            <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
-              Search: "{searchTerm}"
+            <span className="bg-red-600/20 text-red-400 px-4 py-1.5 rounded-full text-sm flex items-center gap-2 border border-red-500/30">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              "{searchTerm}"
             </span>
           )}
           {selectedGenre && (
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-              Genre: {selectedGenre}
+            <span className="bg-purple-600/20 text-purple-400 px-4 py-1.5 rounded-full text-sm flex items-center gap-2 border border-purple-500/30">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2m10 2V2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+              </svg>
+              {selectedGenre}
             </span>
           )}
         </div>
