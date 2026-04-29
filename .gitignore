@@ -56,3 +56,5 @@ ehthumbs.db
 Desktop.ini
 Non-Critical Documents/db_copies/Movies_rows.csv
 /Frontend/.next/
+# Claude Code
+.claude/
