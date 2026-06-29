@@ -1,8 +1,8 @@
 # Film Hub
 
-**Full-Stack Movie Theater Booking Platform** · CSCI 4050 Software Engineering — UGA, Spring 2026.
+**Full-Stack Movie Theater Booking Platform** · CSCI 4050 Software Engineering, UGA, Spring 2026.
 
-A complete cinema booking system: browse movies, pick a showtime, reserve seats, and check out — with admin tooling for movie/showroom CRUD, transactional emails, and a Supabase-backed persistence layer.
+A complete cinema booking system: browse movies, pick a showtime, reserve seats, and check out. It also includes admin tooling for movie/showroom CRUD, transactional emails, and a Supabase-backed persistence layer.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -12,7 +12,7 @@ A complete cinema booking system: browse movies, pick a showtime, reserve seats,
 
 **Live Demo:** [film-hub-theta.vercel.app](https://film-hub-theta.vercel.app/)
 
-> Heads up: the first click after a quiet period takes ~50s — the backend spins down on the free tier.
+> Heads up: the first click after a quiet period takes ~50s, because the backend spins down on the free tier.
 
 <!-- -->
 
@@ -34,4 +34,4 @@ A complete cinema booking system: browse movies, pick a showtime, reserve seats,
 
 ## Course Context
 
-CSCI 4050 — Software Engineering, University of Georgia, Spring 2026.
+CSCI 4050: Software Engineering, University of Georgia, Spring 2026.
